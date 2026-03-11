@@ -1,0 +1,156 @@
+.navbtn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    padding: 8.8px 12px 7.7px 12px;
+    border-radius: 8px;
+    background-color: transparent;
+    color: #475569;
+    font-style: normal;
+    font-weight: 300;
+    line-height: 19px;
+}
+
+.navbtn:hover {
+    background-color: #1B3A5C;
+    color: white;
+}
+
+.navbar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 72px;
+    border: 0 solid #f3f4f6;
+    background-color: #ffffff;
+    z-index: 50;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logoLink {
+    transition: transform 300ms ease;
+}
+
+.logoLink:hover {
+    transform: scale(1.1);
+}
+
+.brandText {
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.menuButton {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    background-color: #ffffff;
+}
+
+.menuIcon {
+    position: relative;
+    width: 18px;
+    height: 2px;
+    background-color: #0f172a;
+}
+
+.menuIcon::before,
+.menuIcon::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    width: 18px;
+    height: 2px;
+    background-color: #0f172a;
+}
+
+.menuIcon::before {
+    top: -6px;
+}
+
+.menuIcon::after {
+    top: 6px;
+}
+
+.srOnly {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+.navLinks {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.navItem {
+    list-style: none;
+}
+
+.menuOverlay {
+    display: none;
+}
+
+@media (max-width: 900px) {
+    .navbar {
+        padding: 12px 20px;
+    }
+
+    .menuButton {
+        display: inline-flex;
+    }
+
+    .navLinks {
+        position: absolute;
+        top: 64px;
+        right: 20px;
+        display: none;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 4px;
+        padding: 12px;
+        border-radius: 12px;
+        background-color: #ffffff;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.15);
+        min-width: 200px;
+        z-index: 60;
+    }
+
+    .navLinksOpen {
+        display: flex;
+    }
+
+    .menuOverlay {
+        position: fixed;
+        inset: 0;
+        border: 0;
+        background: rgba(15, 23, 42, 0.28);
+        backdrop-filter: blur(2px);
+        display: none;
+        z-index: 55;
+    }
+
+    .menuOverlayOpen {
+        display: block;
+    }
+
+}
