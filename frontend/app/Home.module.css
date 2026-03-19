@@ -85,6 +85,9 @@
 }
 
 .heroButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background-color: #2A9D8F;
   color: white;
   font-weight: 500;
@@ -92,10 +95,16 @@
   border-radius: 0.5rem;
   transition: background-color 0.2s;
   font-size: 1rem;
+  text-decoration: none;
 }
 
 .heroButton:hover {
   background-color: #218276;
+}
+
+.heroButton:focus-visible {
+  outline: 3px solid #99f6e4;
+  outline-offset: 2px;
 }
 
 /* 2. Lab Numbers Section */
@@ -264,15 +273,24 @@
 }
 
 .newsReadMore {
+  display: inline-flex;
+  align-items: center;
   color: #2A9D8F;
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
   transition: color 0.2s;
+  text-decoration: none;
 }
 
 .newsReadMore:hover {
   color: #1B3A5C;
+  text-decoration: underline;
+}
+
+.newsReadMore:focus-visible {
+  outline: 2px solid #2A9D8F;
+  outline-offset: 2px;
 }
 
 /* 4. Teams Section */

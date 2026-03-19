@@ -45,7 +45,7 @@ const Footer = () => {
             <button
               type="button"
               className={Styles.iconButton}
-              onClick={() => handleCopy('+212 6 12 34 56 78', 'Phone copied')}
+              onClick={() => handleCopy('+212 (5) 22 98 47 47', 'Phone copied')}
               aria-label="Copy phone number"
             >
               <BiPhone className={Styles.iconSvg} />
@@ -53,7 +53,7 @@ const Footer = () => {
             <button
               type="button"
               className={Styles.iconButton}
-              onClick={() => handleCopy('contact@lp2mgi.example', 'Email copied')}
+              onClick={() => handleCopy('contact@lp2mgi.edu.ma', 'Email copied')}
               aria-label="Copy email address"
             >
               <BiEnvelope className={Styles.iconSvg} />

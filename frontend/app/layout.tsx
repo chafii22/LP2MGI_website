@@ -4,6 +4,22 @@ import Navbar from "./Components/Navbar";
 import Footer from "./Components/Footer";
 import { Inter } from "next/font/google";
 
+const themeInitScript = `(() => {
+  try {
+    const savedMode = localStorage.getItem('theme-mode');
+    const validMode = savedMode === 'light' || savedMode === 'dark' || savedMode === 'system';
+
+    if (!validMode || savedMode === 'system') {
+      document.documentElement.removeAttribute('data-theme');
+      return;
+    }
+
+    document.documentElement.setAttribute('data-theme', savedMode);
+  } catch (_) {
+    document.documentElement.removeAttribute('data-theme');
+  }
+})();`;
+
 const inter = Inter({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600"]
@@ -20,7 +36,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body
         className={`${inter.className} antialiased leading-relaxed`}
       >

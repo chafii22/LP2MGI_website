@@ -18,9 +18,9 @@ export default function Home() {
           <p className={Styles.heroDescription}>
             A multidisciplinary research laboratory dedicated to the advancement of science and engineering through collaborative innovation.
           </p>
-          <button className={Styles.heroButton}>
+          <Link href="/Overview" className={Styles.heroButton}>
             Discover Our Work
-          </button>
+          </Link>
         </div>
       </section>
 
@@ -66,7 +66,7 @@ export default function Home() {
                 <p className={Styles.newsCardDesc}>
                   Brief description of the news article going into a little detail about the event, achievement, or publication.
                 </p>
-                <span className={Styles.newsReadMore}>Read article</span>
+                <Link href="/News" className={Styles.newsReadMore}>Read article</Link>
               </div>
             ))}
           </div>

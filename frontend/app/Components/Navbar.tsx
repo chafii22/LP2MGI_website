@@ -1,15 +1,93 @@
 "use client"
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { Moon, Sun, Monitor } from 'lucide-react'
 import Styles from './Navbar.module.css'
+
+type ThemeMode = 'light' | 'dark' | 'system'
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false)
+  const [themeMode, setThemeMode] = useState<ThemeMode>('system')
+  const pathname = usePathname()
+
+  const navItems = [
+    { href: '/', label: 'Home' },
+    { href: '/Overview', label: 'Overview' },
+    { href: '/Teams', label: 'Teams' },
+    { href: '/Publications', label: 'Publications' },
+    { href: '/Platform', label: 'Platform' },
+    { href: '/News', label: 'News' },
+    { href: '/Contact', label: 'Contact' },
+  ]
 
   const handleToggle = () => setIsOpen((prev) => !prev)
   const handleClose = () => setIsOpen(false)
+
+  const applyTheme = (mode: ThemeMode) => {
+    const root = document.documentElement
+
+    if (mode === 'system') {
+      root.removeAttribute('data-theme')
+      return
+    }
+
+    root.setAttribute('data-theme', mode)
+  }
+
+  const cycleThemeMode = () => {
+    const nextMode: ThemeMode =
+      themeMode === 'system' ? 'light' : themeMode === 'light' ? 'dark' : 'system'
+
+    setThemeMode(nextMode)
+    localStorage.setItem('theme-mode', nextMode)
+    applyTheme(nextMode)
+  }
+
+  const currentThemeLabel =
+    themeMode === 'system' ? 'System' : themeMode === 'light' ? 'Light' : 'Dark'
+
+  const themeIcon =
+    themeMode === 'system' ? <Monitor size={18} aria-hidden="true" /> :
+    themeMode === 'light' ? <Sun size={18} aria-hidden="true" /> :
+    <Moon size={18} aria-hidden="true" />
+
+  const isActivePath = (href: string) => {
+    if (href === '/') {
+      return pathname === '/'
+    }
+
+    return pathname === href || pathname.startsWith(`${href}/`)
+  }
+
+  useEffect(() => {
+    setIsOpen(false)
+  }, [pathname])
+
+  useEffect(() => {
+    const storedMode = localStorage.getItem('theme-mode')
+    const initialMode: ThemeMode =
+      storedMode === 'light' || storedMode === 'dark' || storedMode === 'system'
+        ? storedMode
+        : 'system'
+
+    setThemeMode(initialMode)
+    applyTheme(initialMode)
+  }, [])
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
 
   return (
     <nav className={Styles.navbar}>
@@ -21,16 +99,30 @@ const Navbar = () => {
         <p className={Styles.brandText}>LP2MGI</p>
       </div>
 
-      <button
-        type="button"
-        aria-expanded={isOpen}
-        aria-controls="primary-navigation"
-        className={Styles.menuButton}
-        onClick={handleToggle}
-      >
-        <span className={Styles.menuIcon} />
-        <span className={Styles.srOnly}>Toggle navigation</span>
-      </button>
+      <div className={Styles.actions}>
+        <button
+          type="button"
+          className={Styles.themeToggle}
+          onClick={cycleThemeMode}
+          aria-label={`Theme mode: ${currentThemeLabel}. Click to switch mode.`}
+          title={`Theme mode: ${currentThemeLabel}`}
+        >
+          {themeIcon}
+          <span className={Styles.srOnly}>Switch theme mode</span>
+        </button>
+
+        <button
+          type="button"
+          aria-expanded={isOpen}
+          aria-controls="primary-navigation"
+          className={Styles.menuButton}
+          onClick={handleToggle}
+          aria-label="Toggle navigation menu"
+        >
+          <span className={Styles.menuIcon} />
+          <span className={Styles.srOnly}>Toggle navigation</span>
+        </button>
+      </div>
 
       <button
         type="button"
@@ -45,47 +137,22 @@ const Navbar = () => {
         id="primary-navigation"
         className={`${Styles.navLinks} ${isOpen ? Styles.navLinksOpen : ''}`}
       >
-        <li className={Styles.navItem}>
-          <Link href='/' className={Styles.navbtn} onClick={handleClose}>
-            Home
-          </Link>
-        </li>
+        {navItems.map((item) => {
+          const isActive = isActivePath(item.href)
 
-        <li className={Styles.navItem}>
-          <Link href='/Overview' className={Styles.navbtn} onClick={handleClose}>
-            Overview
-          </Link>
-        </li>
-
-        <li className={Styles.navItem}>
-          <Link href='/Teams' className={Styles.navbtn} onClick={handleClose}>
-            Teams
-          </Link>
-        </li>
-
-        <li className={Styles.navItem}>
-          <Link href='/Publications' className={Styles.navbtn} onClick={handleClose}>
-            Publications
-          </Link>
-        </li>
-
-        <li className={Styles.navItem}>
-          <Link href='/Platform' className={Styles.navbtn} onClick={handleClose}>
-            Platform
-          </Link>
-        </li>
-
-        <li className={Styles.navItem}>
-          <Link href='/News' className={Styles.navbtn} onClick={handleClose}>
-            News
-          </Link>
-        </li>
-
-        <li className={Styles.navItem}>
-          <Link href='/Contact' className={Styles.navbtn} onClick={handleClose}>
-            Contact
-          </Link>
-        </li>
+          return (
+            <li key={item.href} className={Styles.navItem}>
+              <Link
+                href={item.href}
+                className={`${Styles.navbtn} ${isActive ? Styles.navbtnActive : ''}`}
+                onClick={handleClose}
+                aria-current={isActive ? 'page' : undefined}
+              >
+                {item.label}
+              </Link>
+            </li>
+          )
+        })}
       </ul>
     </nav>
   )

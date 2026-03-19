@@ -6,15 +6,26 @@
     padding: 8.8px 12px 7.7px 12px;
     border-radius: 8px;
     background-color: transparent;
-    color: #475569;
+    color: var(--text-muted);
     font-style: normal;
     font-weight: 300;
     line-height: 19px;
 }
 
 .navbtn:hover {
-    background-color: #1B3A5C;
-    color: white;
+    background-color: var(--brand);
+    color: #ffffff;
+}
+
+.navbtnActive {
+    background-color: var(--brand);
+    color: #ffffff;
+    font-weight: 500;
+}
+
+.navbtn:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
 }
 
 .navbar {
@@ -25,8 +36,9 @@
     align-items: center;
     justify-content: space-between;
     padding: 12px 72px;
-    border: 0 solid #f3f4f6;
-    background-color: #ffffff;
+    border: 0 solid var(--navbar-border);
+    background-color: var(--navbar-bg);
+    border-bottom-width: 1px;
     z-index: 50;
 }
 
@@ -46,7 +58,36 @@
 
 .brandText {
     font-weight: 600;
-    color: #0f172a;
+    color: var(--foreground);
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.themeToggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: var(--surface);
+    color: var(--text-muted);
+    transition: border-color 200ms ease, color 200ms ease, background-color 200ms ease;
+}
+
+.themeToggle:hover {
+    border-color: var(--brand);
+    color: var(--foreground);
+}
+
+.themeToggle:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
 }
 
 .menuButton {
@@ -56,15 +97,20 @@
     width: 40px;
     height: 40px;
     border-radius: 10px;
-    border: 1px solid #e2e8f0;
-    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    background-color: var(--surface);
+}
+
+.menuButton:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
 }
 
 .menuIcon {
     position: relative;
     width: 18px;
     height: 2px;
-    background-color: #0f172a;
+    background-color: var(--foreground);
 }
 
 .menuIcon::before,
@@ -74,7 +120,7 @@
     left: 0;
     width: 18px;
     height: 2px;
-    background-color: #0f172a;
+    background-color: var(--foreground);
 }
 
 .menuIcon::before {
@@ -119,6 +165,11 @@
         display: inline-flex;
     }
 
+    .themeToggle {
+        width: 36px;
+        height: 36px;
+    }
+
     .navLinks {
         position: absolute;
         top: 64px;
@@ -129,8 +180,9 @@
         gap: 4px;
         padding: 12px;
         border-radius: 12px;
-        background-color: #ffffff;
-        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.15);
+        border: 1px solid var(--border-color);
+        background-color: var(--surface);
+        box-shadow: 0 12px 30px rgba(2, 6, 23, 0.28);
         min-width: 200px;
         z-index: 60;
     }
@@ -143,7 +195,7 @@
         position: fixed;
         inset: 0;
         border: 0;
-        background: rgba(15, 23, 42, 0.28);
+        background: rgba(2, 6, 23, 0.45);
         backdrop-filter: blur(2px);
         display: none;
         z-index: 55;

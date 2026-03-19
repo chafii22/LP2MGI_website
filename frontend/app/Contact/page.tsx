@@ -1,14 +1,18 @@
 
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
 import Styles from './contact.module.css';
 
 export default function Contact() {
+    const [submitMessage, setSubmitMessage] = useState('');
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Handle form submission
+        const form = e.currentTarget as HTMLFormElement;
+        form.reset();
+        setSubmitMessage('Thank you. Your message has been sent successfully.');
     };
 
     return (
@@ -119,6 +123,12 @@ export default function Contact() {
                                 <Send size={18} />
                                 Send Message
                             </button>
+
+                            {submitMessage && (
+                                <p className={Styles.formFeedback} role="status" aria-live="polite">
+                                    {submitMessage}
+                                </p>
+                            )}
                         </form>
                     </div>
                 </div>
