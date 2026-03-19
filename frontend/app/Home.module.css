@@ -4,14 +4,14 @@
 }
 
 .sectionTitle {
-  color: #1B3A5C;
+  color: var(--foreground);
   margin-bottom: 3rem;
   margin-left: auto;
   margin-right: auto;
 }
 
 .sectionSubtitle {
-  color: #2A9D8F;
+  color: var(--brand);
   font-weight: 500;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -24,15 +24,15 @@
 /* 1. Hero Section */
 .heroSection {
   position: relative;
-  background-color: #1B3A5C;
-  color: white;
+  background-color: var(--hero-bg);
+  color: var(--hero-text);
   padding: 6rem 1.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-soft);
 }
 
 @media (min-width: 768px) {
@@ -44,8 +44,7 @@
 .heroOverlay {
   position: absolute;
   inset: 0;
-  background-color: black;
-  opacity: 0.3;
+  background-color: var(--hero-overlay);
   pointer-events: none;
 }
 
@@ -67,7 +66,7 @@
 }
 
 .heroSubtitle {
-  color: #2A9D8F;
+  color: var(--brand);
   font-weight: 500;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -80,7 +79,7 @@
 }
 
 .heroDescription {
-  color: #e5e7eb;
+  color: var(--hero-text-muted);
   margin-bottom: 2rem;
 }
 
@@ -88,8 +87,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background-color: #2A9D8F;
-  color: white;
+  background-color: var(--brand);
+  color: #ffffff;
   font-weight: 500;
   padding: 0.75rem 2rem;
   border-radius: 0.5rem;
@@ -99,17 +98,17 @@
 }
 
 .heroButton:hover {
-  background-color: #218276;
+  background-color: var(--brand-strong);
 }
 
 .heroButton:focus-visible {
-  outline: 3px solid #99f6e4;
+  outline: 3px solid var(--focus-ring);
   outline-offset: 2px;
 }
 
 /* 2. Lab Numbers Section */
 .metricsSection {
-  background-color: white;
+  background-color: var(--surface);
   padding: 4rem 1.5rem;
 }
 
@@ -153,19 +152,19 @@
 .metricValue {
   font-size: 2rem;
   font-weight: 600;
-  color: #2A9D8F;
+  color: var(--brand);
   margin-bottom: 0.5rem;
 }
 
 .metricLabel {
-  color: #475569;
+  color: var(--text-muted);
   font-weight: 500;
   font-size: 1rem;
 }
 
 /* 3. News Section */
 .newsSection {
-  background-color: #F8FAFB;
+  background-color: var(--surface-muted);
   padding: 4rem 1.5rem;
   overflow: hidden;
 }
@@ -198,7 +197,7 @@
 }
 
 .newsLink {
-  color: #2A9D8F;
+  color: var(--brand);
   font-weight: 600;
   font-size: 1rem;
   text-decoration: none;
@@ -230,14 +229,14 @@
 
 .newsCard {
   min-width: 280px;
-  background-color: white;
+  background-color: var(--surface);
   border-radius: 0.75rem;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-soft);
   padding: 1.5rem;
   scroll-snap-align: start;
-  border: 1px solid #f3f4f6;
+  border: 1px solid var(--border-color);
   flex: none;
-  transition: box-shadow 0.2s;
+  transition: box-shadow 0.2s, transform 0.2s;
 }
 
 @media (min-width: 768px) {
@@ -247,35 +246,36 @@
 }
 
 .newsCard:hover {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-2px);
 }
 
 .newsImagePlaceholder {
   height: 12rem;
-  background-color: #f3f4f6;
+  background-color: var(--surface-muted);
   border-radius: 0.5rem;
   margin-bottom: 1.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #9ca3af;
+  color: var(--text-muted);
   font-size: 0.875rem;
 }
 
 .newsCardTitle {
-  color: #1B3A5C;
+  color: var(--foreground);
   margin-bottom: 0.5rem;
 }
 
 .newsCardDesc {
-  color: #475569;
+  color: var(--text-muted);
   margin-bottom: 1.25rem;
 }
 
 .newsReadMore {
   display: inline-flex;
   align-items: center;
-  color: #2A9D8F;
+  color: var(--brand);
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
@@ -284,18 +284,18 @@
 }
 
 .newsReadMore:hover {
-  color: #1B3A5C;
+  color: var(--brand-strong);
   text-decoration: underline;
 }
 
 .newsReadMore:focus-visible {
-  outline: 2px solid #2A9D8F;
+  outline: 2px solid var(--brand);
   outline-offset: 2px;
 }
 
 /* 4. Teams Section */
 .teamsSection {
-  background-color: white;
+  background-color: var(--surface);
   padding: 4rem 1.5rem;
 }
 
@@ -318,46 +318,46 @@
 }
 
 .teamCard {
-  background-color: #F8FAFB;
+  background-color: var(--surface-muted);
   border-radius: 0.75rem;
   padding: 2rem;
   text-align: center;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-soft);
   transition: all 0.2s;
-  border: 1px solid #f3f4f6;
+  border: 1px solid var(--border-color);
 }
 
 .teamCard:hover {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-hover);
 }
 
 .teamIcon {
   width: 4rem;
   height: 4rem;
-  background-color: #1B3A5C;
+  background-color: var(--brand);
   border-radius: 9999px;
   margin: 0 auto 1.5rem auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: #ffffff;
   font-size: 1.25rem;
   font-weight: 600;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-soft);
 }
 
 .teamName {
-  color: #1B3A5C;
+  color: var(--foreground);
   margin-bottom: 0.5rem;
 }
 
 .teamFocus {
-  color: #475569;
+  color: var(--text-muted);
 }
 
 /* 5. Members Section */
 .membersSection {
-  background-color: #F8FAFB;
+  background-color: var(--surface-muted);
   padding: 4rem 1.5rem;
 }
 
@@ -387,25 +387,26 @@
 }
 
 .memberCard {
-  background-color: white;
+  background-color: var(--surface);
   border-radius: 0.75rem;
   padding: 1.5rem;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  border: 1px solid #f3f4f6;
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   gap: 1.25rem;
-  transition: box-shadow 0.2s;
+  transition: box-shadow 0.2s, transform 0.2s;
 }
 
 .memberCard:hover {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-2px);
 }
 
 .memberInitials {
   width: 4rem;
   height: 4rem;
-  background-color: #1B3A5C;
+  background-color: var(--brand);
   border-radius: 9999px;
   flex-shrink: 0;
   display: flex;
@@ -413,16 +414,16 @@
   justify-content: center;
   font-weight: 600;
   font-size: 1.125rem;
-  color: white;
+  color: #ffffff;
 }
 
 .memberName {
-  color: #1B3A5C;
+  color: var(--foreground);
   margin-bottom: 0.25rem;
 }
 
 .memberRole {
-  color: #2A9D8F;
+  color: var(--brand);
   font-size: 0.875rem;
   font-weight: 400;
 }
@@ -436,7 +437,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #2A9D8F;
+  color: var(--brand);
   font-weight: 500;
   font-size: 1rem;
   transition: color 0.2s;
@@ -444,7 +445,7 @@
 }
 
 .showMoreLink:hover {
-  color: #1B3A5C;
+  color: var(--brand-strong);
 }
 
 .showMoreIcon {
@@ -457,7 +458,7 @@
 
 /* 6. Partners Section */
 .partnersSection {
-  background-color: white;
+  background-color: var(--surface);
   padding: 4rem 1.5rem;
 }
 
@@ -499,26 +500,26 @@
 .partnerLogoHolder {
   width: 7rem;
   height: 7rem;
-  background-color: #F8FAFB;
+  background-color: var(--surface-muted);
   border-radius: 0.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-soft);
 }
 
 .partnerLogoText {
-  color: #475569;
+  color: var(--text-muted);
   font-size: 0.875rem;
   font-weight: 500;
-  opacity: 0.5;
+  opacity: 0.85;
 }
 
 .partnerName {
   font-size: 1rem;
   font-weight: 500;
-  color: #475569;
+  color: var(--text-muted);
   text-align: center;
   max-width: 150px;
 }

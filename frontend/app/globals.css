@@ -5,16 +5,24 @@
   --foreground: #0f172a;
   --surface: #ffffff;
   --surface-muted: #f8fafc;
-  --text-muted: #475569;
+  --surface-hover: #eef4fa;
+  --text-muted: #334155;
+  --text-subtle: #52657d;
   --border-color: #dbe5ef;
   --brand: #2a9d8f;
   --brand-strong: #218276;
   --focus-ring: rgba(42, 157, 143, 0.38);
+  --hero-bg: #1b3a5c;
+  --hero-text: #f8fafc;
+  --hero-text-muted: #d2e0ef;
+  --hero-overlay: rgba(2, 6, 23, 0.32);
+  --shadow-soft: 0 2px 8px rgba(15, 23, 42, 0.08);
+  --shadow-hover: 0 12px 24px rgba(15, 23, 42, 0.14);
   --navbar-bg: rgba(255, 255, 255, 0.92);
   --navbar-border: #e2e8f0;
   --footer-bg: #1b3a5c;
   --footer-text: #e2e8f0;
-  --footer-text-muted: #c8d5e3;
+  --footer-text-muted: #d5e2ef;
   --navbar-height: 64px;
 }
 
@@ -23,16 +31,24 @@
   --foreground: #e2e8f0;
   --surface: #111d2b;
   --surface-muted: #162536;
-  --text-muted: #9fb2c7;
+  --surface-hover: #1c3148;
+  --text-muted: #b5c6d8;
+  --text-subtle: #9db2c8;
   --border-color: #24364b;
   --brand: #4ec4b6;
   --brand-strong: #6dd8cc;
   --focus-ring: rgba(78, 196, 182, 0.42);
+  --hero-bg: #102033;
+  --hero-text: #e8f0f8;
+  --hero-text-muted: #b8cade;
+  --hero-overlay: rgba(2, 6, 23, 0.46);
+  --shadow-soft: 0 2px 10px rgba(0, 0, 0, 0.28);
+  --shadow-hover: 0 14px 28px rgba(0, 0, 0, 0.38);
   --navbar-bg: rgba(11, 20, 32, 0.92);
   --navbar-border: #24364b;
   --footer-bg: #0b1420;
   --footer-text: #c7d5e4;
-  --footer-text-muted: #9fb2c7;
+  --footer-text-muted: #b9cadb;
 }
 
 @theme inline {
@@ -46,16 +62,24 @@
     --foreground: #e2e8f0;
     --surface: #111d2b;
     --surface-muted: #162536;
-    --text-muted: #9fb2c7;
+    --surface-hover: #1c3148;
+    --text-muted: #b5c6d8;
+    --text-subtle: #9db2c8;
     --border-color: #24364b;
     --brand: #4ec4b6;
     --brand-strong: #6dd8cc;
     --focus-ring: rgba(78, 196, 182, 0.42);
+    --hero-bg: #102033;
+    --hero-text: #e8f0f8;
+    --hero-text-muted: #b8cade;
+    --hero-overlay: rgba(2, 6, 23, 0.46);
+    --shadow-soft: 0 2px 10px rgba(0, 0, 0, 0.28);
+    --shadow-hover: 0 14px 28px rgba(0, 0, 0, 0.38);
     --navbar-bg: rgba(11, 20, 32, 0.92);
     --navbar-border: #24364b;
     --footer-bg: #0b1420;
     --footer-text: #c7d5e4;
-    --footer-text-muted: #9fb2c7;
+    --footer-text-muted: #b9cadb;
   }
 }
 

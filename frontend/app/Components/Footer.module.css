@@ -106,7 +106,8 @@
 
 .copyright {
     margin: 0;
-    font-size: 10px;
+    font-size: 12px;
+    letter-spacing: 0.02em;
     color: var(--footer-text-muted);
     font-weight: 400;
 }

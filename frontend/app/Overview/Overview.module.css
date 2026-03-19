@@ -4,7 +4,7 @@
 
 .mainContainer {
   min-height: 100vh;
-  background-color: #ffffff;
+  background-color: var(--surface);
 }
 
 /* ==========================================
@@ -12,7 +12,7 @@
    ========================================== */
 
 .headerSection {
-  background-color: #F8FAFC;
+  background-color: var(--surface-muted);
   padding: 3rem 1.5rem;
   text-align: left;
 }
@@ -29,7 +29,7 @@
 }
 
 .subtitle {
-  color: #2A9D8F;
+  color: var(--brand);
   font-weight: 500;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -38,7 +38,7 @@
 }
 
 .title {
-  color: #1B3A5C;
+  color: var(--foreground);
   font-size: 1.75rem;
   font-weight: 600;
   line-height: 1.3;
@@ -52,7 +52,7 @@
 }
 
 .description {
-  color: #4B5563;
+  color: var(--text-muted);
   font-size: 1rem;
   line-height: 1.6;
   margin-bottom: 0;
@@ -63,7 +63,7 @@
    ========================================== */
 
 .directorSection {
-  background-color: #ffffff;
+  background-color: var(--surface);
   padding: 3rem 1.5rem;
 }
 
@@ -122,12 +122,20 @@
   max-width: 400px;
   height: auto;
   border-radius: 1rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-hover);
   object-fit: cover;
 }
 
+.directorImagePlaceholder {
+  background-color: color-mix(in srgb, var(--brand) 20%, var(--surface));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+}
+
 .directorTitle {
-  color: #1B3A5C;
+  color: var(--foreground);
   font-size: 1.5rem;
   font-weight: 600;
   line-height: 1.3;
@@ -141,7 +149,7 @@
 }
 
 .directorRole {
-  color: #2A9D8F;
+  color: var(--brand);
   font-size: 1rem;
   font-weight: 500;
   margin: 0;
@@ -149,18 +157,18 @@
 }
 
 .directorText {
-  color: #4B5563;
+  color: var(--text-muted);
   font-size: 1rem;
   line-height: 1.7;
   margin: 0;
 }
 
 .directorQuote {
-  border-left: 4px solid #2A9D8F;
+  border-left: 4px solid var(--brand);
   padding-left: 1.5rem;
   margin: 1.5rem 0;
   font-style: italic;
-  color: #1B3A5C;
+  color: var(--foreground);
   font-weight: 500;
   font-size: 1.1rem;
 }
@@ -170,7 +178,7 @@
    ========================================== */
 
 .missionVisionSection {
-  background-color: #F8FAFC;
+  background-color: var(--surface-muted);
   padding: 3rem 1.5rem;
 }
 
@@ -191,7 +199,7 @@
 }
 
 .sectionSubtitle {
-  color: #2A9D8F;
+  color: var(--brand);
   font-weight: 500;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -202,7 +210,7 @@
 }
 
 .sectionTitle {
-  color: #1B3A5C;
+  color: var(--foreground);
   font-size: 1.75rem;
   font-weight: 600;
   line-height: 1.3;
@@ -229,16 +237,16 @@
 }
 
 .card {
-  background-color: #ffffff;
+  background-color: var(--surface);
   border-radius: 0.75rem;
   padding: 2rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-soft);
   transition: all 0.3s ease;
-  border: 1px solid #f3f4f6;
+  border: 1px solid var(--border-color);
 }
 
 .card:hover {
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-hover);
   transform: translateY(-4px);
 }
 
@@ -249,13 +257,13 @@
   width: 3rem;
   height: 3rem;
   border-radius: 0.5rem;
-  background-color: #E0F2F1;
-  color: #2A9D8F;
+  background-color: color-mix(in srgb, var(--brand) 20%, var(--surface));
+  color: var(--brand);
   margin-bottom: 1.5rem;
 }
 
 .cardTitle {
-  color: #1B3A5C;
+  color: var(--foreground);
   font-size: 1.25rem;
   font-weight: 600;
   margin-bottom: 1rem;
@@ -263,18 +271,23 @@
 }
 
 .cardDescription {
-  color: #4B5563;
+  color: var(--text-muted);
   font-size: 1rem;
   line-height: 1.7;
   margin: 0;
 }
 
 .cardListItem {
-  color: #4B5563;
+  color: var(--text-muted);
   font-size: 1rem;
   line-height: 1.6;
   margin: 0.75rem 0 0.75rem 1.5rem;
   list-style-type: disc;
+}
+
+.cardList {
+  padding-left: 0;
+  list-style: none;
 }
 
 /* ==========================================

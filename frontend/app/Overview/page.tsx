@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { Lightbulb, Target, Eye } from 'lucide-react';
+import { Target, Eye } from 'lucide-react';
 import Styles from './Overview.module.css';
 
 export default function Overview() {
@@ -26,14 +26,7 @@ export default function Overview() {
           <div className={Styles.directorLeftColumn}>
             <div className={Styles.directorImageContainer}>
               <div
-                className={Styles.directorImage}
-                style={{
-                  backgroundColor: '#E0F2F1',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '3rem',
-                }}
+                className={`${Styles.directorImage} ${Styles.directorImagePlaceholder}`}
               >
                 👨‍💼
               </div>
@@ -81,7 +74,7 @@ export default function Overview() {
               <p className={Styles.cardDescription}>
                 To conduct high-quality research that advances scientific knowledge and develops innovative solutions. We are committed to:
               </p>
-              <ul style={{ paddingLeft: 0, listStyle: 'none' }}>
+              <ul className={Styles.cardList}>
                 <li className={Styles.cardListItem}>
                   Pursuing excellence in research and education
                 </li>
@@ -106,7 +99,7 @@ export default function Overview() {
               <p className={Styles.cardDescription}>
                 To be recognized internationally as a leading research laboratory that:
               </p>
-              <ul style={{ paddingLeft: 0, listStyle: 'none' }}>
+              <ul className={Styles.cardList}>
                 <li className={Styles.cardListItem}>
                   Generates transformative research with global impact
                 </li>

@@ -4,7 +4,7 @@
 
 .mainContainer {
   min-height: 100vh;
-  background-color: #ffffff;
+  background-color: var(--surface);
 
 }
 
@@ -13,7 +13,7 @@
    ========================================== */
 
 .headerSection {
-  background-color: #F8FAFC;
+  background-color: var(--surface-muted);
   padding: 3rem 1.5rem;
   text-align: left;
 }
@@ -30,7 +30,7 @@
 }
 
 .subtitle {
-  color: #2A9D8F;
+  color: var(--brand);
   font-weight: 500;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -39,7 +39,7 @@
 }
 
 .title {
-  color: #1B3A5C;
+  color: var(--foreground);
   font-size: 1.75rem;
   font-weight: 600;
   line-height: 1.3;
@@ -53,7 +53,7 @@
 }
 
 .description {
-  color: #4B5563;
+  color: var(--text-muted);
   font-size: 1rem;
   line-height: 1.6;
   margin-bottom: 0;
@@ -64,7 +64,7 @@
    ========================================== */
 
 .contentSection {
-  background-color: #ffffff;
+  background-color: var(--surface);
   padding: 3rem 1.5rem;
 }
 
@@ -100,7 +100,7 @@
 }
 
 .containerTitle {
-  color: #1B3A5C;
+  color: var(--foreground);
   font-size: 1.25rem;
   font-weight: 600;
   margin-bottom: 1rem;
@@ -111,13 +111,15 @@
   gap: 1.25rem;
   padding: 1.25rem;
   border-radius: 0.75rem;
-  background-color: #F8FAFC;
+  background-color: var(--surface-muted);
   transition: all 0.3s ease;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-soft);
 }
 
 .infoCard:hover {
-  background-color: #EFF6F9;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  background-color: var(--surface-hover);
+  box-shadow: var(--shadow-hover);
 }
 
 .iconWrapper {
@@ -127,8 +129,8 @@
   width: 3rem;
   height: 3rem;
   border-radius: 0.5rem;
-  background-color: #E0F2F1;
-  color: #2A9D8F;
+  background-color: color-mix(in srgb, var(--brand) 20%, var(--surface));
+  color: var(--brand);
   flex-shrink: 0;
 }
 
@@ -140,14 +142,14 @@
 }
 
 .infoTitle {
-  color: #1B3A5C;
+  color: var(--foreground);
   font-size: 1rem;
   font-weight: 600;
   margin-bottom: 0.25rem;
 }
 
 .infoText {
-  color: #4B5563;
+  color: var(--text-muted);
   font-size: 1rem;
   line-height: 1.6;
   margin: 0;
@@ -175,7 +177,7 @@
 }
 
 .label {
-  color: #1B3A5C;
+  color: var(--foreground);
   font-size: 0.95rem;
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -184,26 +186,26 @@
 .input,
 .textarea {
   padding: 0.875rem 1rem;
-  border: 2px solid #E2E8F0;
+  border: 2px solid var(--border-color);
   border-radius: 0.5rem;
   font-family: inherit;
   font-size: 1rem;
-  color: #171717;
-  background-color: #ffffff;
+  color: var(--foreground);
+  background-color: var(--surface);
   transition: all 0.3s ease;
 }
 
 .input::placeholder,
 .textarea::placeholder {
-  color: #9CA3AF;
+  color: var(--text-subtle);
 }
 
 .input:focus,
 .textarea:focus {
   outline: none;
-  border-color: #2A9D8F;
-  box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.1);
-  background-color: #ffffff;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 30%, transparent);
+  background-color: var(--surface);
 }
 
 .textarea {
@@ -222,7 +224,7 @@
   gap: 0.625rem;
   padding: 0.85rem 1.75rem;
   margin-top: 0.75rem;
-  background-color: #2A9D8F;
+  background-color: var(--brand);
   color: #ffffff;
   font-size: 0.95rem;
   font-weight: 600;
@@ -230,28 +232,28 @@
   border-radius: 0.5rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(42, 157, 143, 0.2);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--brand) 35%, transparent);
 }
 
 .submitButton:hover {
-  background-color: #218276;
-  box-shadow: 0 4px 12px rgba(42, 157, 143, 0.3);
+  background-color: var(--brand-strong);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--brand) 45%, transparent);
   transform: translateY(-2px);
 }
 
 .submitButton:active {
   transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(42, 157, 143, 0.2);
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--brand) 35%, transparent);
 }
 
 .submitButton:focus {
   outline: none;
-  box-shadow: 0 0 0 4px rgba(42, 157, 143, 0.15);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand) 35%, transparent);
 }
 
 .formFeedback {
   margin: 0;
-  color: #1b7f73;
+  color: var(--brand);
   font-size: 0.95rem;
   font-weight: 500;
 }
