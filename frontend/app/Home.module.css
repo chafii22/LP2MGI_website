@@ -213,6 +213,65 @@
   text-decoration: underline;
 }
 
+.newsCarouselWrap {
+  position: relative;
+}
+
+.newsArrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  background-color: var(--surface);
+  color: var(--foreground);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  line-height: 1;
+  box-shadow: var(--shadow-soft);
+  transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+}
+
+.newsArrowLeft {
+  left: -52px;
+}
+
+.newsArrowRight {
+  right: -52px;
+}
+
+.newsArrow:hover {
+  border-color: var(--brand);
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-50%) scale(1.03);
+}
+
+.newsArrow:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+@media (max-width: 767px) {
+  .newsArrowLeft {
+    left: -10px;
+  }
+
+  .newsArrowRight {
+    right: -10px;
+  }
+
+  .newsArrow {
+    width: 42px;
+    height: 42px;
+    font-size: 1.8rem;
+  }
+}
+
 .newsCarousel {
   display: flex;
   overflow-x: auto;
@@ -228,7 +287,11 @@
 }
 
 .newsCard {
+  display: block;
+  width: 300px;
   min-width: 280px;
+  max-width: 320px;
+
   background-color: var(--surface);
   border-radius: 0.75rem;
   box-shadow: var(--shadow-soft);
@@ -237,11 +300,12 @@
   border: 1px solid var(--border-color);
   flex: none;
   transition: box-shadow 0.2s, transform 0.2s;
+  text-decoration: none;
 }
 
 @media (min-width: 768px) {
   .newsCard {
-    min-width: 350px;
+    width: 340px;
   }
 }
 
@@ -267,28 +331,27 @@
   margin-bottom: 0.5rem;
 }
 
-.newsCardDesc {
-  color: var(--text-muted);
-  margin-bottom: 1.25rem;
+.newsTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0;
 }
 
-.newsReadMore {
+.newsTag {
   display: inline-flex;
   align-items: center;
+  background-color: var(--surface-muted);
   color: var(--brand);
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: color 0.2s;
-  text-decoration: none;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1;
 }
 
-.newsReadMore:hover {
-  color: var(--brand-strong);
-  text-decoration: underline;
-}
-
-.newsReadMore:focus-visible {
+.newsCard:focus-visible {
   outline: 2px solid var(--brand);
   outline-offset: 2px;
 }

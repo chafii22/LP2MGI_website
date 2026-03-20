@@ -1,8 +1,26 @@
-import React from 'react';
+"use client";
+
+import React, { useRef } from 'react';
 import Link from 'next/link';
 import Styles from './Home.module.css';
 
 export default function Home() {
+  const newsCarouselRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollNews = (direction: 'left' | 'right') => {
+    const container = newsCarouselRef.current;
+
+    if (!container) {
+      return;
+    }
+
+    const scrollAmount = Math.max(260, Math.floor(container.clientWidth * 0.8));
+    container.scrollBy({
+      left: direction === 'left' ? -scrollAmount : scrollAmount,
+      behavior: 'smooth',
+    });
+  };
+
   return (
     <main className={Styles.mainContainer}>
       {/* 1. Hero Section */}
@@ -57,18 +75,46 @@ export default function Home() {
               View all news →
             </Link>
           </div>
-          {/* Simple horizontal scroll for carousel effect */}
-          <div className={Styles.newsCarousel}>
-            {[1, 2, 3, 4].map((item) => (
-              <div key={item} className={Styles.newsCard}>
-                <div className={Styles.newsImagePlaceholder}>Image Placeholder</div>
-                <h3 className={Styles.newsCardTitle}>Exciting Research Update {item}</h3>
-                <p className={Styles.newsCardDesc}>
-                  Brief description of the news article going into a little detail about the event, achievement, or publication.
-                </p>
-                <Link href="/News" className={Styles.newsReadMore}>Read article</Link>
-              </div>
-            ))}
+          <div className={Styles.newsCarouselWrap}>
+            <button
+              type="button"
+              className={`${Styles.newsArrow} ${Styles.newsArrowLeft}`}
+              onClick={() => scrollNews('left')}
+              aria-label="Scroll news left"
+            >
+              ‹
+            </button>
+
+            {/* Simple horizontal scroll for carousel effect */}
+            <div ref={newsCarouselRef} className={Styles.newsCarousel}>
+              {[1, 2, 3, 4, 5,6].map((item) => (
+                <Link
+                  key={item}
+                  href="/News"
+                  className={Styles.newsCard}
+                  aria-label={`Open news article ${item}`}
+                >
+                  <div className={Styles.newsImagePlaceholder}>Image Placeholder</div>
+                  <h3 className={Styles.newsCardTitle}>Exciting Research Update {item}</h3>
+                  <div className={Styles.newsTags}>
+                    {['AI', 'Publication', 'Conference'].map((tag) => (
+                      <span key={`${item}-${tag}`} className={Styles.newsTag}>
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              className={`${Styles.newsArrow} ${Styles.newsArrowRight}`}
+              onClick={() => scrollNews('right')}
+              aria-label="Scroll news right"
+            >
+              ›
+            </button>
           </div>
         </div>
       </section>

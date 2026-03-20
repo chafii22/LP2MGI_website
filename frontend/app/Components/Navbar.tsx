@@ -4,15 +4,17 @@ import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Moon, Sun, Monitor } from 'lucide-react'
+import { Moon, Sun } from 'lucide-react'
 import Styles from './Navbar.module.css'
 
-type ThemeMode = 'light' | 'dark' | 'system'
+type ThemeMode = 'light' | 'dark'
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false)
-  const [themeMode, setThemeMode] = useState<ThemeMode>('system')
+  const [openPath, setOpenPath] = useState<string | null>(null)
+  const [themeMode, setThemeMode] = useState<ThemeMode>('light')
   const pathname = usePathname()
+  const currentPath = pathname ?? '/'
+  const isOpen = openPath === currentPath
 
   const navItems = [
     { href: '/', label: 'Home' },
@@ -24,36 +26,26 @@ const Navbar = () => {
     { href: '/Contact', label: 'Contact' },
   ]
 
-  const handleToggle = () => setIsOpen((prev) => !prev)
-  const handleClose = () => setIsOpen(false)
+  const handleToggle = () => {
+    setOpenPath((prev) => (prev === currentPath ? null : currentPath))
+  }
+
+  const handleClose = () => setOpenPath(null)
 
   const applyTheme = (mode: ThemeMode) => {
-    const root = document.documentElement
-
-    if (mode === 'system') {
-      root.removeAttribute('data-theme')
-      return
-    }
-
-    root.setAttribute('data-theme', mode)
+    document.documentElement.setAttribute('data-theme', mode)
   }
 
   const cycleThemeMode = () => {
-    const nextMode: ThemeMode =
-      themeMode === 'system' ? 'light' : themeMode === 'light' ? 'dark' : 'system'
+    const nextMode: ThemeMode = themeMode === 'light' ? 'dark' : 'light'
 
     setThemeMode(nextMode)
-    localStorage.setItem('theme-mode', nextMode)
-    applyTheme(nextMode)
   }
 
-  const currentThemeLabel =
-    themeMode === 'system' ? 'System' : themeMode === 'light' ? 'Light' : 'Dark'
+  const currentThemeLabel = themeMode === 'light' ? 'Light' : 'Dark'
 
   const themeIcon =
-    themeMode === 'system' ? <Monitor size={18} aria-hidden="true" /> :
-    themeMode === 'light' ? <Sun size={18} aria-hidden="true" /> :
-    <Moon size={18} aria-hidden="true" />
+    themeMode === 'light' ? <Sun size={18} aria-hidden="true" /> : <Moon size={18} aria-hidden="true" />
 
   const isActivePath = (href: string) => {
     if (href === '/') {
@@ -64,30 +56,26 @@ const Navbar = () => {
   }
 
   useEffect(() => {
-    setIsOpen(false)
-  }, [pathname])
-
-  useEffect(() => {
-    const storedMode = localStorage.getItem('theme-mode')
-    const initialMode: ThemeMode =
-      storedMode === 'light' || storedMode === 'dark' || storedMode === 'system'
-        ? storedMode
-        : 'system'
-
-    setThemeMode(initialMode)
-    applyTheme(initialMode)
-  }, [])
-
-  useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        setIsOpen(false)
+        setOpenPath(null)
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
+
+  useEffect(() => {
+    const storedMode = localStorage.getItem('theme-mode')
+    const initialMode: ThemeMode = storedMode === 'dark' ? 'dark' : 'light'
+    setThemeMode(initialMode)
+  }, [])
+
+  useEffect(() => {
+    applyTheme(themeMode)
+    localStorage.setItem('theme-mode', themeMode)
+  }, [themeMode])
 
   return (
     <nav className={Styles.navbar}>
