@@ -11,7 +11,13 @@ type ThemeMode = 'light' | 'dark'
 
 const Navbar = () => {
   const [openPath, setOpenPath] = useState<string | null>(null)
-  const [themeMode, setThemeMode] = useState<ThemeMode>('light')
+  const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
+    if (typeof window === 'undefined') {
+      return 'light'
+    }
+
+    return localStorage.getItem('theme-mode') === 'dark' ? 'dark' : 'light'
+  })
   const pathname = usePathname()
   const currentPath = pathname ?? '/'
   const isOpen = openPath === currentPath
@@ -67,12 +73,6 @@ const Navbar = () => {
   }, [])
 
   useEffect(() => {
-    const storedMode = localStorage.getItem('theme-mode')
-    const initialMode: ThemeMode = storedMode === 'dark' ? 'dark' : 'light'
-    setThemeMode(initialMode)
-  }, [])
-
-  useEffect(() => {
     applyTheme(themeMode)
     localStorage.setItem('theme-mode', themeMode)
   }, [themeMode])
@@ -81,10 +81,10 @@ const Navbar = () => {
     <nav className={Styles.navbar}>
       {/* logo */}
       <div className={Styles.brand}>
-        <Link href='/' className={Styles.logoLink} onClick={handleClose}>
-          <Image src="/logo_ESTC.png" alt="Logo" width={32} height={32} />
+        <Link href='/' className={Styles.logoLink} onClick={handleClose} aria-label="LP2MGI home">
+          <Image src="/Logo_ESTC.png" alt="LP2MGI logo" width={36} height={36} className={Styles.logoImage} priority />
+          <span className={Styles.brandText}>LP2MGI</span>
         </Link>
-        <p className={Styles.brandText}>LP2MGI</p>
       </div>
 
       <div className={Styles.actions}>

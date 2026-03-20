@@ -1,0 +1,201 @@
+.mainContainer {
+	min-height: 100vh;
+	background-color: var(--surface);
+}
+
+.headerSection {
+	background-color: var(--surface-muted);
+	padding: 3rem 1.5rem;
+}
+
+@media (min-width: 768px) {
+	.headerSection {
+		padding: 4rem 2rem;
+	}
+}
+
+.headerContent {
+	max-width: 1200px;
+	margin: 0 auto;
+}
+
+.subtitle {
+	color: var(--brand);
+	font-weight: 500;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	font-size: 0.875rem;
+	margin: 0 0 0.6rem;
+}
+
+.title {
+	color: var(--foreground);
+	font-size: 1.75rem;
+	font-weight: 600;
+	line-height: 1.3;
+	margin: 0 0 0.65rem;
+}
+
+@media (min-width: 768px) {
+	.title {
+		font-size: 2.25rem;
+	}
+}
+
+.description {
+	color: var(--text-muted);
+	font-size: 1rem;
+	line-height: 1.65;
+	margin: 0;
+	max-width: 760px;
+}
+
+.teamsSection {
+	padding: 3rem 1.5rem;
+}
+
+@media (min-width: 768px) {
+	.teamsSection {
+		padding: 4rem 2rem;
+	}
+}
+
+.teamsContent {
+	max-width: 1200px;
+	margin: 0 auto;
+}
+
+.sectionHeading {
+	margin-bottom: 1.8rem;
+}
+
+.sectionTitle {
+	color: var(--foreground);
+	font-size: 1.35rem;
+	line-height: 1.4;
+	margin: 0 0 0.35rem;
+}
+
+.sectionText {
+	color: var(--text-muted);
+	margin: 0;
+	font-size: 0.96rem;
+}
+
+.teamGrid {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 1rem;
+}
+
+@media (min-width: 768px) {
+	.teamGrid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 1.25rem;
+	}
+}
+
+.teamCard {
+	border: 1px solid var(--border-color);
+	border-radius: 0.9rem;
+	padding: 1rem;
+	background-color: var(--surface);
+	box-shadow: var(--shadow-soft);
+	display: flex;
+	flex-direction: column;
+}
+
+@media (min-width: 768px) {
+	.teamCard {
+		padding: 1.2rem;
+	}
+}
+
+.cardTop {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.7rem;
+	margin-bottom: 0.75rem;
+}
+
+.teamBadge {
+	width: 2.2rem;
+	height: 2.2rem;
+	border-radius: 0.65rem;
+	background-color: color-mix(in srgb, var(--brand) 16%, var(--surface));
+	color: var(--brand);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.82rem;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+}
+
+.focusTag {
+	border-radius: 999px;
+	border: 1px solid color-mix(in srgb, var(--brand) 26%, var(--surface));
+	background-color: color-mix(in srgb, var(--brand) 11%, var(--surface));
+	color: var(--brand);
+	padding: 0.28rem 0.72rem;
+	font-size: 0.78rem;
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+.teamTitle {
+	color: var(--foreground);
+	margin: 0 0 0.55rem;
+	font-size: 1.2rem;
+	line-height: 1.35;
+}
+
+.metaRow {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.45rem 1rem;
+	margin-bottom: 0.65rem;
+}
+
+.metaItem {
+	margin: 0;
+	color: var(--text-muted);
+	font-size: 0.9rem;
+}
+
+.metaLabel {
+	color: var(--foreground);
+	font-weight: 600;
+}
+
+.cardDescription {
+	color: var(--text-muted);
+	font-size: 0.96rem;
+	line-height: 1.65;
+	margin: 0;
+}
+
+.cardButton {
+	margin-top: 1rem;
+	color: var(--brand);
+	font-size: 0.9rem;
+	font-weight: 600;
+	text-decoration: none;
+	border-bottom: 1px solid transparent;
+	width: fit-content;
+	transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.cardButton:hover {
+	color: color-mix(in srgb, var(--brand) 88%, #000);
+	border-bottom-color: currentColor;
+}
+
+@media (max-width: 767px) {
+	.headerSection,
+	.teamsSection {
+		padding-left: 1rem;
+		padding-right: 1rem;
+	}
+}

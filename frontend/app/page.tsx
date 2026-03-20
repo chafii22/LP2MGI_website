@@ -2,6 +2,7 @@
 
 import React, { useRef } from 'react';
 import Link from 'next/link';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Styles from './Home.module.css';
 
 export default function Home() {
@@ -82,7 +83,7 @@ export default function Home() {
               onClick={() => scrollNews('left')}
               aria-label="Scroll news left"
             >
-              ‹
+              <ChevronLeft size={24} strokeWidth={2.4} aria-hidden="true" />
             </button>
 
             {/* Simple horizontal scroll for carousel effect */}
@@ -113,7 +114,7 @@ export default function Home() {
               onClick={() => scrollNews('right')}
               aria-label="Scroll news right"
             >
-              ›
+              <ChevronRight size={24} strokeWidth={2.4} aria-hidden="true" />
             </button>
           </div>
         </div>

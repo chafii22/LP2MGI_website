@@ -45,20 +45,31 @@
 .brand {
     display: flex;
     align-items: center;
-    gap: 12px;
 }
 
 .logoLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
     transition: transform 300ms ease;
 }
 
 .logoLink:hover {
-    transform: scale(1.1);
+    transform: scale(1.03);
+}
+
+.logoImage {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
 }
 
 .brandText {
     font-weight: 600;
     color: var(--foreground);
+    letter-spacing: 0.02em;
+    line-height: 1;
 }
 
 .actions {
@@ -168,6 +179,15 @@
     .themeToggle {
         width: 36px;
         height: 36px;
+    }
+
+    .logoImage {
+        width: 34px;
+        height: 34px;
+    }
+
+    .brandText {
+        font-size: 0.95rem;
     }
 
     .navLinks {
