@@ -1,0 +1,246 @@
+.mainContainer {
+	min-height: 100vh;
+	background-color: var(--surface);
+}
+
+.headerSection {
+	background-color: var(--surface-muted);
+	padding: 3rem 1.5rem;
+}
+
+@media (min-width: 768px) {
+	.headerSection {
+		padding: 4rem 2rem;
+	}
+}
+
+.headerContent {
+	max-width: 1200px;
+	margin: 0 auto;
+}
+
+.subtitle {
+	color: var(--brand);
+	font-weight: 500;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	font-size: 0.875rem;
+	margin: 0 0 0.6rem;
+}
+
+.title {
+	color: var(--foreground);
+	font-size: 1.75rem;
+	font-weight: 600;
+	line-height: 1.3;
+	margin: 0;
+}
+
+@media (min-width: 768px) {
+	.title {
+		font-size: 2.25rem;
+	}
+}
+
+.newsSection {
+	padding: 3rem 1.5rem;
+}
+
+@media (min-width: 768px) {
+	.newsSection {
+		padding: 4rem 2rem;
+	}
+}
+
+.newsContent {
+	max-width: 1200px;
+	margin: 0 auto;
+}
+
+.filterBar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.65rem;
+	margin-bottom: 2rem;
+}
+
+.filterButton {
+	background-color: var(--surface-muted);
+	color: var(--text-muted);
+	border: 1px solid transparent;
+	border-radius: 999px;
+	padding: 0.5rem 1rem;
+	font-size: 0.9rem;
+	font-weight: 500;
+	line-height: 1;
+	cursor: pointer;
+	transition: all 0.25s ease;
+}
+
+.filterButton:hover {
+	color: var(--foreground);
+	border-color: color-mix(in srgb, var(--brand) 35%, var(--surface));
+}
+
+.filterButtonActive {
+	background-color: var(--brand);
+	color: #fff;
+	border-color: var(--brand);
+}
+
+.newsList {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+}
+
+.newsCard {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 1.25rem;
+	background-color: var(--surface);
+	border: 1px solid var(--border-color);
+	border-radius: 0.9rem;
+	padding: 1rem;
+	box-shadow: var(--shadow-soft);
+	transition: border-color 0.2s ease;
+}
+
+.newsCard:hover {
+	border-color: color-mix(in srgb, var(--brand) 28%, var(--surface));
+}
+
+@media (min-width: 768px) {
+	.newsCard {
+		grid-template-columns: 280px 1fr;
+		gap: 1.5rem;
+		padding: 1.2rem;
+	}
+}
+
+.imageWrapper {
+	width: 100%;
+	aspect-ratio: 16 / 10;
+	border-radius: 0.75rem;
+	overflow: hidden;
+	background-color: var(--surface-muted);
+}
+
+@media (min-width: 768px) {
+	.imageWrapper {
+		aspect-ratio: auto;
+		min-height: 180px;
+		height: 100%;
+	}
+}
+
+.newsImage {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+.newsBody {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+.cardMeta {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+	margin-bottom: 0.8rem;
+}
+
+.categoryTag {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 999px;
+	padding: 0.28rem 0.75rem;
+	font-size: 0.78rem;
+	font-weight: 600;
+	letter-spacing: 0.01em;
+	white-space: nowrap;
+}
+
+.categoryTagEvent {
+	background-color: color-mix(in srgb, #1d4ed8 16%, var(--surface));
+	color: #1d4ed8;
+	border: 1px solid color-mix(in srgb, #1d4ed8 30%, var(--surface));
+}
+
+.categoryTagConference {
+	background-color: color-mix(in srgb, #047857 15%, var(--surface));
+	color: #047857;
+	border: 1px solid color-mix(in srgb, #047857 30%, var(--surface));
+}
+
+.categoryTagWorkshop {
+	background-color: color-mix(in srgb, #b45309 16%, var(--surface));
+	color: #b45309;
+	border: 1px solid color-mix(in srgb, #b45309 30%, var(--surface));
+}
+
+.publishDate {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	color: var(--text-muted);
+	font-size: 0.86rem;
+	white-space: nowrap;
+}
+
+.dateIcon {
+	color: var(--text-muted);
+	flex-shrink: 0;
+}
+
+.newsTitle {
+	color: var(--foreground);
+	font-size: 1.25rem;
+	font-weight: 600;
+	line-height: 1.35;
+	margin: 0 0 0.65rem;
+}
+
+.newsExcerpt {
+	color: var(--text-muted);
+	font-size: 0.98rem;
+	line-height: 1.65;
+	margin: 0;
+}
+
+.readMoreButton {
+	margin-top: 1rem;
+	text-decoration: none;
+	background-color: transparent;
+	color: var(--brand);
+	border-bottom: 1px solid transparent;
+	padding: 0;
+	font-size: 0.9rem;
+	font-weight: 600;
+	line-height: 1;
+	transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.readMoreButton:hover {
+	color: color-mix(in srgb, var(--brand) 88%, #000);
+	border-color: currentColor;
+}
+
+@media (max-width: 767px) {
+	.headerSection,
+	.newsSection {
+		padding-left: 1rem;
+		padding-right: 1rem;
+	}
+
+	.cardMeta {
+		flex-wrap: wrap;
+	}
+}
