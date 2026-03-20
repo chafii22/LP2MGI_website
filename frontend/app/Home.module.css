@@ -66,12 +66,28 @@
 }
 
 .heroSubtitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.38rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--brand) 35%, transparent);
+  background-color: color-mix(in srgb, var(--brand) 18%, transparent);
   color: var(--brand);
   font-weight: 500;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   font-size: 0.875rem;
   margin-bottom: 0.75rem;
+}
+
+.heroSubtitle::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background-color: var(--brand);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand) 24%, transparent);
 }
 
 .heroTitle {

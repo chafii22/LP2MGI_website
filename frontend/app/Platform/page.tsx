@@ -6,7 +6,7 @@ export default function Platform() {
     return(
         <main className="min-h-screen flex items-center justify-center">
             <h1 className="text-3xl font-semibold">
-                Platform Page
+                Platform Page (coming soon)
             </h1>
         </main>
     );
