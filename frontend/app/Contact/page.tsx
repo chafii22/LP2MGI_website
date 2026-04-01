@@ -4,15 +4,35 @@
 import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
 import Styles from './contact.module.css';
+import { createContactMessage } from '@/lib/api';
 
 export default function Contact() {
     const [submitMessage, setSubmitMessage] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const form = e.currentTarget as HTMLFormElement;
-        form.reset();
-        setSubmitMessage('Thank you. Your message has been sent successfully.');
+        const formData = new FormData(form);
+
+        const payload = {
+            full_name: String(formData.get('full_name') || '').trim(),
+            email: String(formData.get('email') || '').trim(),
+            subject: String(formData.get('subject') || '').trim(),
+            message: String(formData.get('message') || '').trim(),
+        };
+
+        try {
+            setIsSubmitting(true);
+            setSubmitMessage('');
+            await createContactMessage(payload);
+            form.reset();
+            setSubmitMessage('Thank you. Your message has been sent successfully.');
+        } catch {
+            setSubmitMessage('Sorry, we could not send your message right now. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -80,6 +100,7 @@ export default function Contact() {
                                 <input
                                     type="text"
                                     id="name"
+                                    name="full_name"
                                     placeholder="Your Name"
                                     className={Styles.input}
                                     required
@@ -91,6 +112,7 @@ export default function Contact() {
                                 <input
                                     type="email"
                                     id="email"
+                                    name="email"
                                     placeholder="your.email@example.com"
                                     className={Styles.input}
                                     required
@@ -102,6 +124,7 @@ export default function Contact() {
                                 <input
                                     type="text"
                                     id="subject"
+                                    name="subject"
                                     placeholder="What is this about?"
                                     className={Styles.input}
                                     required
@@ -112,6 +135,7 @@ export default function Contact() {
                                 <label htmlFor="message" className={Styles.label}>Message</label>
                                 <textarea
                                     id="message"
+                                    name="message"
                                     placeholder="Your message here..."
                                     className={Styles.textarea}
                                     rows={5}
@@ -119,9 +143,9 @@ export default function Contact() {
                                 ></textarea>
                             </div>
 
-                            <button type="submit" className={Styles.submitButton}>
+                            <button type="submit" className={Styles.submitButton} disabled={isSubmitting}>
                                 <Send size={18} />
-                                Send Message
+                                {isSubmitting ? 'Sending...' : 'Send Message'}
                             </button>
 
                             {submitMessage && (

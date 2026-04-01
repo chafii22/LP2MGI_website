@@ -1,12 +1,116 @@
 "use client";
 
-import React, { useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Styles from './Home.module.css';
+import { getHomeContent, getTeams, type NewsItem, type TeamListItem } from '@/lib/api';
+
+const defaultMetrics = [
+  { label: 'Researchers', value: '45+' },
+  { label: 'Publications', value: '120+' },
+  { label: 'Projects', value: '30+' },
+  { label: 'Partners', value: '15+' },
+];
+
+const defaultFeaturedNews = [
+  {
+    slug: 'sample-news-1',
+    title: 'Exciting Research Update 1',
+    tags: ['ai', 'publication', 'conference'],
+    cover_image_url: '',
+  },
+  {
+    slug: 'sample-news-2',
+    title: 'Exciting Research Update 2',
+    tags: ['event', 'research'],
+    cover_image_url: '',
+  },
+  {
+    slug: 'sample-news-3',
+    title: 'Exciting Research Update 3',
+    tags: ['workshop', 'innovation'],
+    cover_image_url: '',
+  },
+] as const;
+
+const defaultTeams = [
+  { slug: 'team-alpha', title: 'Team Alpha', short_name: 'A', focus: 'Artificial Intelligence & Data Science' },
+  { slug: 'team-beta', title: 'Team Beta', short_name: 'B', focus: 'Advanced Materials & Systems' },
+  { slug: 'team-gamma', title: 'Team Gamma', short_name: 'G', focus: 'Industrial & Process Engineering' },
+] as const;
 
 export default function Home() {
   const newsCarouselRef = useRef<HTMLDivElement | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hero, setHero] = useState<{ subtitle: string; title: string; description: string; button_label: string; button_link: string } | null>(null);
+  const [metrics, setMetrics] = useState<Array<{ label: string; value: string }>>([]);
+  const [featuredNews, setFeaturedNews] = useState<NewsItem[]>([]);
+  const [teams, setTeams] = useState<TeamListItem[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadHomeData = async () => {
+      try {
+        const [homeContent, teamList] = await Promise.all([getHomeContent(), getTeams()]);
+
+        if (!isMounted) {
+          return;
+        }
+
+        setHero(homeContent.hero);
+        setMetrics(homeContent.metrics.map((metric) => ({ label: metric.label, value: metric.value })));
+        setFeaturedNews(homeContent.featured_news);
+        setTeams(teamList);
+      } catch {
+        if (!isMounted) {
+          return;
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadHomeData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const metricsToRender = metrics.length ? metrics : defaultMetrics;
+
+  const featuredNewsToRender = useMemo(() => {
+    if (featuredNews.length) {
+      return featuredNews.slice(0, 6).map((item) => ({
+        slug: item.slug,
+        title: item.title,
+        tags: item.tags,
+        cover_image_url: item.cover_image_url,
+      }));
+    }
+
+    return defaultFeaturedNews;
+  }, [featuredNews]);
+
+  const teamsToRender = teams.length ? teams.slice(0, 3) : defaultTeams;
+
+  const membersToRender = teams.length
+    ? teams
+        .filter((team) => team.lead_name)
+        .slice(0, 6)
+        .map((team) => ({ name: team.lead_name, role: `Lead - ${team.title}` }))
+    : [
+        { name: 'Alice Smith', role: 'Lead Researcher' },
+        { name: 'Bob Johnson', role: 'Senior Analyst' },
+        { name: 'Claire Davis', role: 'PhD Candidate' },
+        { name: 'David Wilson', role: 'Data Scientist' },
+        { name: 'Eva Brown', role: 'Research Assistant' },
+        { name: 'Frank Miller', role: 'Engineer' },
+      ];
 
   const scrollNews = (direction: 'left' | 'right') => {
     const container = newsCarouselRef.current;
@@ -29,16 +133,16 @@ export default function Home() {
         <div className={Styles.heroOverlay}></div>
         <div className={Styles.heroContent}>
           <p className={Styles.heroSubtitle}>
-            Welcome to Our Lab
+            {hero?.subtitle || 'Welcome to Our Lab'}
           </p>
           <h1 className={Styles.heroTitle}>
-            Research & Innovation at LP2MGI
+            {hero?.title || 'Research & Innovation at LP2MGI'}
           </h1>
           <p className={Styles.heroDescription}>
-            A multidisciplinary research laboratory dedicated to the advancement of science and engineering through collaborative innovation.
+            {hero?.description || 'A multidisciplinary research laboratory dedicated to the advancement of science and engineering through collaborative innovation.'}
           </p>
-          <Link href="/Overview" className={Styles.heroButton}>
-            Discover Our Work
+          <Link href={hero?.button_link || '/Overview'} className={Styles.heroButton}>
+            {hero?.button_label || 'Discover Our Work'}
           </Link>
         </div>
       </section>
@@ -49,12 +153,7 @@ export default function Home() {
           <p className={Styles.sectionSubtitle}>Metrics</p>
           <h2 className={Styles.sectionTitle}>Our Impact in Numbers</h2>
           <div className={Styles.metricsGrid}>
-            {[
-              { label: 'Researchers', value: '45+' },
-              { label: 'Publications', value: '120+' },
-              { label: 'Projects', value: '30+' },
-              { label: 'Partners', value: '15+' },
-            ].map((stat, i) => (
+            {metricsToRender.map((stat, i) => (
               <div key={i} className={Styles.metricCard}>
                 <p className={Styles.metricValue}>{stat.value}</p>
                 <p className={Styles.metricLabel}>{stat.label}</p>
@@ -88,18 +187,32 @@ export default function Home() {
 
             {/* Simple horizontal scroll for carousel effect */}
             <div ref={newsCarouselRef} className={Styles.newsCarousel}>
-              {[1, 2, 3, 4, 5,6].map((item) => (
+              {featuredNewsToRender.map((item, index) => (
                 <Link
-                  key={item}
-                  href="/News"
+                  key={item.slug}
+                  href={`/News/${item.slug}`}
                   className={Styles.newsCard}
-                  aria-label={`Open news article ${item}`}
+                  aria-label={`Open news article ${index + 1}`}
                 >
-                  <div className={Styles.newsImagePlaceholder}>Image Placeholder</div>
-                  <h3 className={Styles.newsCardTitle}>Exciting Research Update {item}</h3>
+                  <div
+                    className={Styles.newsImagePlaceholder}
+                    style={
+                      item.cover_image_url
+                        ? {
+                            backgroundImage: `url(${item.cover_image_url})`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            color: 'transparent',
+                          }
+                        : undefined
+                    }
+                  >
+                    {!item.cover_image_url ? 'Image Placeholder' : 'Image'}
+                  </div>
+                  <h3 className={Styles.newsCardTitle}>{item.title}</h3>
                   <div className={Styles.newsTags}>
-                    {['AI', 'Publication', 'Conference'].map((tag) => (
-                      <span key={`${item}-${tag}`} className={Styles.newsTag}>
+                    {(item.tags?.length ? item.tags : ['news']).slice(0, 3).map((tag) => (
+                      <span key={`${item.slug}-${tag}`} className={Styles.newsTag}>
                         #{tag}
                       </span>
                     ))}
@@ -128,18 +241,14 @@ export default function Home() {
             <h2 className={Styles.sectionTitle} style={{marginBottom: 0}}>Our Research Teams</h2>
           </div>
           <div className={Styles.teamsGrid}>
-            {[
-              { name: 'Team Alpha', focus: 'Artificial Intelligence & Data Science' },
-              { name: 'Team Beta', focus: 'Advanced Materials & Systems' },
-              { name: 'Team Gamma', focus: 'Industrial & Process Engineering' },
-            ].map((team, idx) => (
-              <div key={idx} className={Styles.teamCard}>
+            {teamsToRender.map((team) => (
+              <Link key={team.slug} href={`/Teams/${team.slug}`} className={Styles.teamCard}>
                 <div className={Styles.teamIcon}>
-                  {team.name.split(' ')[1].charAt(0)}
+                  {(team.short_name || team.title || 'T').charAt(0).toUpperCase()}
                 </div>
-                <h3 className={Styles.teamName}>{team.name}</h3>
-                <p className={Styles.teamFocus}>{team.focus}</p>
-              </div>
+                <h3 className={Styles.teamName}>{team.title}</h3>
+                <p className={Styles.teamFocus}>{team.focus || 'Research focus to be updated.'}</p>
+              </Link>
             ))}
           </div>
         </div>
@@ -153,14 +262,7 @@ export default function Home() {
             <h2 className={Styles.sectionTitle} style={{marginBottom: 0}}>Meet Our Members</h2>
           </div>
           <div className={Styles.membersGrid}>
-            {[
-              { name: 'Alice Smith', role: 'Lead Researcher' },
-              { name: 'Bob Johnson', role: 'Senior Analyst' },
-              { name: 'Claire Davis', role: 'PhD Candidate' },
-              { name: 'David Wilson', role: 'Data Scientist' },
-              { name: 'Eva Brown', role: 'Research Assistant' },
-              { name: 'Frank Miller', role: 'Engineer' },
-            ].map((member, idx) => {
+            {membersToRender.map((member, idx) => {
               const initials = member.name.split(' ').map((n) => n[0]).join('');
               return (
                 <div key={idx} className={Styles.memberCard}>
@@ -209,6 +311,12 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {isLoading && (
+        <p style={{ textAlign: 'center', color: 'var(--text-muted)', margin: '1rem 0 2rem' }}>
+          Loading latest data...
+        </p>
+      )}
     </main>
   );
 }

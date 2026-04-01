@@ -1,9 +1,13 @@
 
+"use client";
+
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import styles from './Teams.module.css';
+import { getTeams, type TeamListItem } from '@/lib/api';
 
 type TeamItem = {
-    id: string;
+    slug: string;
     title: string;
     shortName: string;
     lead: string;
@@ -14,7 +18,7 @@ type TeamItem = {
 
 const teams: TeamItem[] = [
     {
-        id: 'data-intelligence',
+        slug: 'data-intelligence',
         title: 'Data Intelligence Team',
         shortName: 'DI',
         lead: 'Prof. A. El Idrissi',
@@ -24,7 +28,7 @@ const teams: TeamItem[] = [
             'Developing robust data-driven models for prediction, decision support, and explainable AI in applied research settings.',
     },
     {
-        id: 'software-systems',
+        slug: 'software-systems',
         title: 'Software Systems Team',
         shortName: 'SS',
         lead: 'Prof. M. Chafii',
@@ -34,7 +38,7 @@ const teams: TeamItem[] = [
             'Designing high-quality software architectures with emphasis on reliability, performance, and maintainability at scale.',
     },
     {
-        id: 'smart-networks',
+        slug: 'smart-networks',
         title: 'Smart Networks Team',
         shortName: 'SN',
         lead: 'Prof. N. Bensalah',
@@ -46,6 +50,43 @@ const teams: TeamItem[] = [
 ];
 
 export default function TeamsPage() {
+    const [apiTeams, setApiTeams] = useState<TeamListItem[]>([]);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const loadTeams = async () => {
+            try {
+                const data = await getTeams();
+                if (isMounted) {
+                    setApiTeams(data);
+                }
+            } catch {
+                if (isMounted) {
+                    setApiTeams([]);
+                }
+            }
+        };
+
+        loadTeams();
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
+    const teamsToRender: TeamItem[] = apiTeams.length
+        ? apiTeams.map((team) => ({
+              slug: team.slug,
+              title: team.title,
+              shortName: team.short_name || team.title.slice(0, 2).toUpperCase(),
+              lead: team.lead_name || 'Not specified',
+              members: team.members_count || 0,
+              focus: team.focus || 'Research focus to be updated.',
+              description: team.overview || 'Team overview coming soon.',
+          }))
+        : teams;
+
     return (
         <main className={styles.mainContainer}>
             <section className={styles.headerSection}>
@@ -67,8 +108,8 @@ export default function TeamsPage() {
                     </div>
 
                     <div className={styles.teamGrid}>
-                        {teams.map((team) => (
-                            <article key={team.id} className={styles.teamCard}>
+                        {teamsToRender.map((team) => (
+                            <article key={team.slug} className={styles.teamCard}>
                                 <div className={styles.cardTop}>
                                     <div className={styles.teamBadge}>{team.shortName}</div>
                                     <span className={styles.focusTag}>{team.focus}</span>
@@ -87,7 +128,7 @@ export default function TeamsPage() {
 
                                 <p className={styles.cardDescription}>{team.description}</p>
 
-                                <Link href={`/Teams/${team.id}`} className={styles.cardButton}>
+                                <Link href={`/Teams/${team.slug}`} className={styles.cardButton}>
                                     View Team
                                 </Link>
                             </article>

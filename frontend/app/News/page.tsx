@@ -1,30 +1,23 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { CalendarDays } from 'lucide-react';
 import styles from './News.module.css';
+import { getNews, type NewsItem } from '@/lib/api';
 
-type NewsCategory = 'All' | 'Event' | 'Conference' | 'Workshop';
+type NewsCategory = 'All' | string;
 
-type NewsItem = {
+type NewsCardItem = {
 	slug: string;
 	title: string;
 	excerpt: string;
-	category: Exclude<NewsCategory, 'All'>;
+	category: string;
 	publishedAt: string;
 	imageUrl: string;
 };
 
-const categoryFilters: NewsCategory[] = ['All', 'Event', 'Conference', 'Workshop'];
-
-const categoryClassMap: Record<Exclude<NewsCategory, 'All'>, string> = {
-	Event: 'categoryTagEvent',
-	Conference: 'categoryTagConference',
-	Workshop: 'categoryTagWorkshop',
-};
-
-const newsItems: NewsItem[] = [
+const fallbackNewsItems: NewsCardItem[] = [
 	{
 		slug: 'ai-healthcare-symposium-2026',
 		title: 'AI for Healthcare Symposium 2026',
@@ -63,16 +56,93 @@ const newsItems: NewsItem[] = [
 	},
 ];
 
+function formatDate(value: string | null): string {
+	if (!value) {
+		return 'Date not specified';
+	}
+
+	const date = new Date(value);
+	if (Number.isNaN(date.getTime())) {
+		return value;
+	}
+
+	return new Intl.DateTimeFormat('en-US', {
+		month: 'long',
+		day: '2-digit',
+		year: 'numeric',
+	}).format(date);
+}
+
+function getCategoryClass(category: string): string {
+	const value = category.toLowerCase();
+
+	if (value.includes('event')) {
+		return styles.categoryTagEvent;
+	}
+
+	if (value.includes('conference')) {
+		return styles.categoryTagConference;
+	}
+
+	if (value.includes('workshop')) {
+		return styles.categoryTagWorkshop;
+	}
+
+	return styles.categoryTagConference;
+}
+
 export default function NewsPage() {
+	const [newsItems, setNewsItems] = useState<NewsCardItem[]>([]);
 	const [activeFilter, setActiveFilter] = useState<NewsCategory>('All');
+
+	useEffect(() => {
+		let isMounted = true;
+
+		const loadNews = async () => {
+			try {
+				const data = await getNews();
+				if (!isMounted) {
+					return;
+				}
+
+				const mappedItems = data.map((item: NewsItem) => ({
+					slug: item.slug,
+					title: item.title,
+					excerpt: item.excerpt || item.body || 'News details are being updated.',
+					category: item.category || 'General',
+					publishedAt: formatDate(item.published_at),
+					imageUrl: item.cover_image_url || 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=900&q=80',
+				}));
+
+				setNewsItems(mappedItems);
+			} catch {
+				if (isMounted) {
+					setNewsItems([]);
+				}
+			}
+		};
+
+		loadNews();
+
+		return () => {
+			isMounted = false;
+		};
+	}, []);
+
+	const newsToRender = newsItems.length ? newsItems : fallbackNewsItems;
+
+	const categoryFilters = useMemo<NewsCategory[]>(() => {
+		const categories = Array.from(new Set(newsToRender.map((item) => item.category)));
+		return ['All', ...categories];
+	}, [newsToRender]);
 
 	const filteredNews = useMemo(() => {
 		if (activeFilter === 'All') {
-			return newsItems;
+			return newsToRender;
 		}
 
-		return newsItems.filter((item) => item.category === activeFilter);
-	}, [activeFilter]);
+		return newsToRender.filter((item) => item.category === activeFilter);
+	}, [activeFilter, newsToRender]);
 
 	return (
 		<main className={styles.mainContainer}>
@@ -112,7 +182,7 @@ export default function NewsPage() {
 
 								<div className={styles.newsBody}>
 									<div className={styles.cardMeta}>
-										<span className={`${styles.categoryTag} ${styles[categoryClassMap[item.category]]}`}>
+										<span className={`${styles.categoryTag} ${getCategoryClass(item.category)}`}>
 											{item.category}
 										</span>
 										<span className={styles.publishDate}>

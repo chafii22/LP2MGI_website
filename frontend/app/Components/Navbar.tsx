@@ -11,13 +11,7 @@ type ThemeMode = 'light' | 'dark'
 
 const Navbar = () => {
   const [openPath, setOpenPath] = useState<string | null>(null)
-  const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
-    if (typeof window === 'undefined') {
-      return 'light'
-    }
-
-    return localStorage.getItem('theme-mode') === 'dark' ? 'dark' : 'light'
-  })
+  const [themeMode, setThemeMode] = useState<ThemeMode>('light')
   const pathname = usePathname()
   const currentPath = pathname ?? '/'
   const isOpen = openPath === currentPath
