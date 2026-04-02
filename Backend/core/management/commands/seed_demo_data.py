@@ -1,4 +1,5 @@
 from datetime import date
+from urllib.parse import quote_plus
 
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
@@ -145,13 +146,55 @@ class Command(BaseCommand):
 
         members = {}
         for idx, (full_name, role, team_key, is_leader) in enumerate(members_data, start=1):
+            team = teams[team_key]
+            member_query = quote_plus(full_name)
+            expertise_text = f"Research and innovation in {team.domain.lower()}."
+
+            milestone_rows = [
+                {
+                    "date": "2024 - Present",
+                    "label": "Current Position",
+                    "value": f"{role} at {team.title}",
+                },
+                {
+                    "date": "2022 - Present",
+                    "label": "Research Area",
+                    "value": team.focus,
+                },
+                {
+                    "date": "2020 - Present",
+                    "label": "Primary Expertise",
+                    "value": expertise_text,
+                },
+            ]
+
+            if is_leader:
+                milestone_rows.insert(
+                    0,
+                    {
+                        "date": "2025 - Present",
+                        "label": "Leadership",
+                        "value": f"Coordinates strategic activities for {team.short_name}.",
+                    },
+                )
+
             member, _ = Member.objects.update_or_create(
                 full_name=full_name,
                 defaults={
                     "role": role,
-                    "expertise": f"Research and innovation in {teams[team_key].domain.lower()}.",
+                    "expertise": expertise_text,
                     "email": build_email(full_name),
                     "photo_url": "",
+                    "biography": (
+                        f"{full_name} contributes to {team.title} through multidisciplinary research "
+                        f"activities and collaborative scientific projects."
+                    ),
+                    "highlight_quote": "Scientific research creates practical value when it bridges theory and real-world impact.",
+                    "research_interests": [team.domain, team.focus, *team.tags],
+                    "milestones": milestone_rows,
+                    "researchgate_url": f"https://www.researchgate.net/search/researcher?q={member_query}",
+                    "google_scholar_url": f"https://scholar.google.com/scholar?q={member_query}",
+                    "orcid_url": f"https://orcid.org/orcid-search/search?searchQuery={member_query}",
                     "is_active": True,
                 },
             )

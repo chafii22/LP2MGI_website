@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.html import format_html
 from unfold.admin import ModelAdmin
 
 from core.models import HomeHero, HomeMetric
@@ -9,6 +10,33 @@ class HomeHeroAdmin(ModelAdmin):
     list_display = ("title", "is_active", "updated_at")
     search_fields = ("title", "subtitle", "description")
     list_filter = ("is_active",)
+    readonly_fields = ("background_image_preview",)
+    fields = (
+        "subtitle",
+        "title",
+        "description",
+        "button_label",
+        "button_link",
+        "background_image_url",
+        "background_image_preview",
+        "is_active",
+    )
+
+    def background_image_preview(self, obj):
+        if not obj or not obj.background_image_url:
+            return "No image"
+
+        image_src = str(obj.background_image_url)
+        if not image_src.startswith(("http://", "https://")):
+            image_src = obj.background_image_url.url
+
+        return format_html(
+            '<img src="{}" alt="{}" style="max-height: 120px; border-radius: 8px;" />',
+            image_src,
+            obj.title,
+        )
+
+    background_image_preview.short_description = "Background preview"
 
 
 @admin.register(HomeMetric)

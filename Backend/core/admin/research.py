@@ -10,6 +10,7 @@ class ProjectAdmin(ModelAdmin):
     list_display = ("title", "team", "status", "date_start", "date_end", "is_active")
     search_fields = ("title", "description", "team__title")
     list_filter = ("status", "is_active", "team")
+    date_hierarchy = "date_start"
     prepopulated_fields = {"slug": ("title",)}
     autocomplete_fields = ("team", "created_by")
     inlines = [ProjectParticipationInline]

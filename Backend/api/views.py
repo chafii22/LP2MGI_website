@@ -1,4 +1,7 @@
+from django.conf import settings
 from django.db.models import Count, Prefetch
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -36,11 +39,15 @@ from .serializers import (
 )
 
 
+API_CACHE_TIMEOUT = getattr(settings, "API_CACHE_TIMEOUT", 60)
+
+
 @api_view(["GET"])
 def test_api(request):
     return Response({"message": "Hello from Django API", "status": "success"})
 
 
+@method_decorator(cache_page(API_CACHE_TIMEOUT), name="dispatch")
 class TeamViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = None
     lookup_field = "slug"
@@ -52,6 +59,7 @@ class TeamViewSet(viewsets.ReadOnlyModelViewSet):
                 Prefetch(
                     "memberships",
                     queryset=TeamMembership.objects.select_related("member").order_by("order", "id"),
+                    to_attr="prefetched_memberships",
                 )
             )
         return queryset
@@ -62,6 +70,7 @@ class TeamViewSet(viewsets.ReadOnlyModelViewSet):
         return TeamListSerializer
 
 
+@method_decorator(cache_page(API_CACHE_TIMEOUT), name="dispatch")
 class NewsPostViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = None
     serializer_class = NewsPostSerializer
@@ -82,6 +91,7 @@ class NewsPostViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset
 
 
+@method_decorator(cache_page(API_CACHE_TIMEOUT), name="dispatch")
 class HomeContentView(APIView):
     def get(self, request):
         hero = HomeHero.objects.filter(is_active=True).order_by("-updated_at").first()
@@ -89,15 +99,15 @@ class HomeContentView(APIView):
         featured_news = (
             NewsPost.objects.filter(is_published=True, is_featured=True)
             .select_related("category")
-            .prefetch_related("tags")
+            .prefetch_related("tags", Prefetch("authors", queryset=Member.objects.filter(is_active=True)))
             .order_by("-published_at", "-created_at")[:6]
         )
 
         return Response(
             {
-                "hero": HomeHeroSerializer(hero).data if hero else None,
-                "metrics": HomeMetricSerializer(metrics, many=True).data,
-                "featured_news": NewsPostSerializer(featured_news, many=True).data,
+                "hero": HomeHeroSerializer(hero, context={"request": request}).data if hero else None,
+                "metrics": HomeMetricSerializer(metrics, many=True, context={"request": request}).data,
+                "featured_news": NewsPostSerializer(featured_news, many=True, context={"request": request}).data,
             }
         )
 
@@ -117,14 +127,22 @@ class ContactMessageCreateView(APIView):
         )
 
 
+@method_decorator(cache_page(API_CACHE_TIMEOUT), name="dispatch")
 class ProjectViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = None
     lookup_field = "slug"
 
     def get_queryset(self):
-        queryset = Project.objects.filter(is_active=True).select_related("team").prefetch_related(
-            Prefetch("participations", queryset=ProjectParticipation.objects.select_related("member").order_by("id"))
-        )
+        queryset = Project.objects.filter(is_active=True).select_related("team")
+
+        if self.action == "retrieve":
+            queryset = queryset.prefetch_related(
+                Prefetch(
+                    "participations",
+                    queryset=ProjectParticipation.objects.select_related("member").order_by("id"),
+                    to_attr="prefetched_participations",
+                )
+            )
 
         team = self.request.query_params.get("team")
         if team:
@@ -138,6 +156,7 @@ class ProjectViewSet(viewsets.ReadOnlyModelViewSet):
         return ProjectListSerializer
 
 
+@method_decorator(cache_page(API_CACHE_TIMEOUT), name="dispatch")
 class PublicationViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = None
     serializer_class = PublicationSerializer
@@ -145,7 +164,11 @@ class PublicationViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         queryset = Publication.objects.filter(is_published=True).select_related("team").prefetch_related(
-            Prefetch("author_links", queryset=PublicationAuthor.objects.select_related("member").order_by("order", "id"))
+            Prefetch(
+                "author_links",
+                queryset=PublicationAuthor.objects.select_related("member").order_by("order", "id"),
+                to_attr="prefetched_author_links",
+            )
         )
 
         team = self.request.query_params.get("team")
@@ -155,6 +178,7 @@ class PublicationViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset.order_by("-year", "-created_at")
 
 
+@method_decorator(cache_page(API_CACHE_TIMEOUT), name="dispatch")
 class EventViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = None
     serializer_class = EventSerializer
@@ -164,6 +188,7 @@ class EventViewSet(viewsets.ReadOnlyModelViewSet):
         return Event.objects.filter(is_published=True).order_by("-event_date", "-created_at")
 
 
+@method_decorator(cache_page(API_CACHE_TIMEOUT), name="dispatch")
 class ContentPageViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = None
     serializer_class = ContentPageSerializer
@@ -173,6 +198,7 @@ class ContentPageViewSet(viewsets.ReadOnlyModelViewSet):
         return ContentPage.objects.filter(is_published=True).order_by("title")
 
 
+@method_decorator(cache_page(API_CACHE_TIMEOUT), name="dispatch")
 class GalleryViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = None
     serializer_class = GallerySerializer

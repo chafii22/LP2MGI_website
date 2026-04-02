@@ -1,3 +1,4 @@
+from django.utils.html import format_html
 from unfold.admin import TabularInline
 
 from core.models import GalleryImage, ProjectParticipation, PublicationAuthor, TeamMembership
@@ -29,5 +30,22 @@ class PublicationAuthorInline(TabularInline):
 class GalleryImageInline(TabularInline):
     model = GalleryImage
     extra = 1
-    fields = ("image_url", "caption", "order", "is_active")
+    readonly_fields = ("image_preview",)
+    fields = ("image_url", "image_preview", "caption", "order", "is_active")
     ordering = ("order", "id")
+
+    def image_preview(self, obj):
+        if not obj or not obj.image_url:
+            return "No image"
+
+        image_src = str(obj.image_url)
+        if not image_src.startswith(("http://", "https://")):
+            image_src = obj.image_url.url
+
+        return format_html(
+            '<img src="{}" alt="{}" style="max-height: 56px; border-radius: 6px;" />',
+            image_src,
+            obj.caption or "Gallery image",
+        )
+
+    image_preview.short_description = "Preview"

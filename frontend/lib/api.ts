@@ -18,6 +18,17 @@ export type TeamMember = {
   expertise: string;
   email: string;
   photo_url: string;
+  biography?: string;
+  highlight_quote?: string;
+  research_interests?: string[];
+  milestones?: Array<{
+    date: string;
+    label: string;
+    value: string;
+  }>;
+  researchgate_url?: string;
+  google_scholar_url?: string;
+  orcid_url?: string;
   is_active: boolean;
   is_leader: boolean;
   order: number;
@@ -186,6 +197,16 @@ function normalizeApiBase(base: string): string {
 function getApiBaseCandidates(): string[] {
   const primary = normalizeApiBase(configuredApiBase || "/api");
   const candidates = [primary];
+
+  const browserHostname =
+    typeof window !== "undefined" ? window.location.hostname.trim() : "";
+
+  if (browserHostname && browserHostname !== "localhost" && browserHostname !== "127.0.0.1") {
+    const hostFallback = `http://${browserHostname}:8000/api`;
+    if (!candidates.includes(hostFallback)) {
+      candidates.push(hostFallback);
+    }
+  }
 
   const devFallbacks = ["http://127.0.0.1:8000/api", "http://localhost:8000/api"];
   for (const fallback of devFallbacks) {

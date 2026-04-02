@@ -18,7 +18,28 @@ from core.models import (
 )
 
 
+def _build_media_url(request, media_field) -> str:
+    if not media_field:
+        return ""
+
+    raw_value = str(media_field)
+    if raw_value.startswith(("http://", "https://")):
+        return raw_value
+
+    try:
+        media_url = media_field.url
+    except (AttributeError, ValueError):
+        return raw_value
+
+    if request is None:
+        return media_url
+
+    return request.build_absolute_uri(media_url)
+
+
 class MemberSerializer(serializers.ModelSerializer):
+    photo_url = serializers.SerializerMethodField()
+
     class Meta:
         model = Member
         fields = [
@@ -28,8 +49,18 @@ class MemberSerializer(serializers.ModelSerializer):
             "expertise",
             "email",
             "photo_url",
+            "biography",
+            "highlight_quote",
+            "research_interests",
+            "milestones",
+            "researchgate_url",
+            "google_scholar_url",
+            "orcid_url",
             "is_active",
         ]
+
+    def get_photo_url(self, obj):
+        return _build_media_url(self.context.get("request"), obj.photo_url)
 
 
 class TeamListSerializer(serializers.ModelSerializer):
@@ -54,6 +85,7 @@ class TeamListSerializer(serializers.ModelSerializer):
 
 
 class TeamMembershipMemberSerializer(serializers.ModelSerializer):
+    photo_url = serializers.SerializerMethodField()
     is_leader = serializers.BooleanField(source="team_memberships.is_leader", read_only=True)
     order = serializers.IntegerField(source="team_memberships.order", read_only=True)
 
@@ -66,10 +98,20 @@ class TeamMembershipMemberSerializer(serializers.ModelSerializer):
             "expertise",
             "email",
             "photo_url",
+            "biography",
+            "highlight_quote",
+            "research_interests",
+            "milestones",
+            "researchgate_url",
+            "google_scholar_url",
+            "orcid_url",
             "is_active",
             "is_leader",
             "order",
         ]
+
+    def get_photo_url(self, obj):
+        return _build_media_url(self.context.get("request"), obj.photo_url)
 
 
 class TeamDetailSerializer(serializers.ModelSerializer):
@@ -93,7 +135,11 @@ class TeamDetailSerializer(serializers.ModelSerializer):
         ]
 
     def get_members(self, obj):
-        memberships = obj.memberships.select_related("member").order_by("order", "id")
+        request = self.context.get("request")
+        memberships = getattr(obj, "prefetched_memberships", None)
+        if memberships is None:
+            memberships = obj.memberships.select_related("member").order_by("order", "id")
+
         members = []
         for membership in memberships:
             member = membership.member
@@ -104,7 +150,14 @@ class TeamDetailSerializer(serializers.ModelSerializer):
                     "role": member.role,
                     "expertise": member.expertise,
                     "email": member.email,
-                    "photo_url": member.photo_url,
+                    "photo_url": _build_media_url(request, member.photo_url),
+                    "biography": member.biography,
+                    "highlight_quote": member.highlight_quote,
+                    "research_interests": member.research_interests,
+                    "milestones": member.milestones,
+                    "researchgate_url": member.researchgate_url,
+                    "google_scholar_url": member.google_scholar_url,
+                    "orcid_url": member.orcid_url,
                     "is_active": member.is_active,
                     "is_leader": membership.is_leader,
                     "order": membership.order,
@@ -114,6 +167,7 @@ class TeamDetailSerializer(serializers.ModelSerializer):
 
 
 class NewsPostSerializer(serializers.ModelSerializer):
+    cover_image_url = serializers.SerializerMethodField()
     category = serializers.SlugRelatedField(read_only=True, slug_field="slug")
     tags = serializers.SlugRelatedField(many=True, read_only=True, slug_field="slug")
     authors = MemberSerializer(many=True, read_only=True)
@@ -137,8 +191,13 @@ class NewsPostSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
 
+    def get_cover_image_url(self, obj):
+        return _build_media_url(self.context.get("request"), obj.cover_image_url)
+
 
 class HomeHeroSerializer(serializers.ModelSerializer):
+    background_image_url = serializers.SerializerMethodField()
+
     class Meta:
         model = HomeHero
         fields = [
@@ -151,6 +210,9 @@ class HomeHeroSerializer(serializers.ModelSerializer):
             "background_image_url",
             "is_active",
         ]
+
+    def get_background_image_url(self, obj):
+        return _build_media_url(self.context.get("request"), obj.background_image_url)
 
 
 class HomeMetricSerializer(serializers.ModelSerializer):
@@ -166,6 +228,7 @@ class ContactMessageCreateSerializer(serializers.ModelSerializer):
 
 
 class ProjectParticipantSerializer(serializers.ModelSerializer):
+    photo_url = serializers.SerializerMethodField()
     role_in_project = serializers.CharField(source="project_participations.role", read_only=True)
 
     class Meta:
@@ -180,6 +243,9 @@ class ProjectParticipantSerializer(serializers.ModelSerializer):
             "is_active",
             "role_in_project",
         ]
+
+    def get_photo_url(self, obj):
+        return _build_media_url(self.context.get("request"), obj.photo_url)
 
 
 class ProjectListSerializer(serializers.ModelSerializer):
@@ -222,7 +288,11 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
         ]
 
     def get_participants(self, obj):
-        participations = obj.participations.select_related("member").order_by("id")
+        request = self.context.get("request")
+        participations = getattr(obj, "prefetched_participations", None)
+        if participations is None:
+            participations = obj.participations.select_related("member").order_by("id")
+
         participants = []
         for participation in participations:
             member = participation.member
@@ -233,7 +303,7 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
                     "role": member.role,
                     "expertise": member.expertise,
                     "email": member.email,
-                    "photo_url": member.photo_url,
+                    "photo_url": _build_media_url(request, member.photo_url),
                     "is_active": member.is_active,
                     "role_in_project": participation.role,
                 }
@@ -242,6 +312,7 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
 
 
 class PublicationAuthorMemberSerializer(serializers.ModelSerializer):
+    photo_url = serializers.SerializerMethodField()
     order = serializers.IntegerField(source="publication_links.order", read_only=True)
 
     class Meta:
@@ -256,6 +327,9 @@ class PublicationAuthorMemberSerializer(serializers.ModelSerializer):
             "is_active",
             "order",
         ]
+
+    def get_photo_url(self, obj):
+        return _build_media_url(self.context.get("request"), obj.photo_url)
 
 
 class PublicationSerializer(serializers.ModelSerializer):
@@ -280,7 +354,11 @@ class PublicationSerializer(serializers.ModelSerializer):
         ]
 
     def get_authors(self, obj):
-        author_links = obj.author_links.select_related("member").order_by("order", "id")
+        request = self.context.get("request")
+        author_links = getattr(obj, "prefetched_author_links", None)
+        if author_links is None:
+            author_links = obj.author_links.select_related("member").order_by("order", "id")
+
         authors = []
         for author_link in author_links:
             member = author_link.member
@@ -291,7 +369,7 @@ class PublicationSerializer(serializers.ModelSerializer):
                     "role": member.role,
                     "expertise": member.expertise,
                     "email": member.email,
-                    "photo_url": member.photo_url,
+                    "photo_url": _build_media_url(request, member.photo_url),
                     "is_active": member.is_active,
                     "order": author_link.order,
                 }
@@ -330,9 +408,14 @@ class ContentPageSerializer(serializers.ModelSerializer):
 
 
 class GalleryImageSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+
     class Meta:
         model = GalleryImage
         fields = ["id", "image_url", "caption", "order", "is_active"]
+
+    def get_image_url(self, obj):
+        return _build_media_url(self.context.get("request"), obj.image_url)
 
 
 class GallerySerializer(serializers.ModelSerializer):

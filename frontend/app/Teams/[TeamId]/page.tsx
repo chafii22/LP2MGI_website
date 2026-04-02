@@ -255,7 +255,7 @@ export default function TeamDetailPage() {
 
           <div className={styles.membersGrid}>
             {filteredMembers.map((member: TeamMember) => (
-              <article key={member.id} className={styles.memberCard}>
+              <Link key={member.id} href={`/Teams/${teamSlug}/${member.id}`} className={styles.memberCard}>
                 <div className={styles.memberInitials}>{getInitials(member.full_name)}</div>
                 <div className={styles.memberContent}>
                   <div className={styles.memberTop}>
@@ -264,7 +264,7 @@ export default function TeamDetailPage() {
                   </div>
                   <p className={styles.memberRole}>{member.role}</p>
                 </div>
-              </article>
+              </Link>
             ))}
           </div>
         </div>

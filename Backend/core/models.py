@@ -1,6 +1,37 @@
+import os
+from uuid import uuid4
+
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 from django.utils.text import slugify
+
+
+def _dated_upload_path(prefix: str, reference: str, filename: str) -> str:
+	ext = os.path.splitext(filename)[1].lower()
+	if not ext:
+		ext = ".bin"
+	safe_reference = slugify(reference)[:60] or "file"
+	date_path = timezone.now().strftime("%Y/%m")
+	unique_suffix = uuid4().hex[:8]
+	return f"{prefix}/{date_path}/{safe_reference}-{unique_suffix}{ext}"
+
+
+def member_photo_upload_to(instance, filename: str) -> str:
+	return _dated_upload_path("members/photos", instance.full_name, filename)
+
+
+def news_cover_upload_to(instance, filename: str) -> str:
+	return _dated_upload_path("news/covers", instance.title, filename)
+
+
+def home_hero_background_upload_to(instance, filename: str) -> str:
+	return _dated_upload_path("home/hero", instance.title, filename)
+
+
+def gallery_image_upload_to(instance, filename: str) -> str:
+	gallery_title = instance.gallery.title if instance.gallery_id else "gallery"
+	return _dated_upload_path("galleries/images", gallery_title, filename)
 
 
 class TimeStampedModel(models.Model):
@@ -53,7 +84,14 @@ class Member(TimeStampedModel):
 	role = models.CharField(max_length=40, choices=MemberRole.choices)
 	expertise = models.CharField(max_length=255, blank=True)
 	email = models.EmailField(blank=True)
-	photo_url = models.URLField(blank=True)
+	photo_url = models.ImageField(upload_to=member_photo_upload_to, blank=True)
+	biography = models.TextField(blank=True)
+	highlight_quote = models.CharField(max_length=280, blank=True)
+	research_interests = models.JSONField(default=list, blank=True)
+	milestones = models.JSONField(default=list, blank=True)
+	researchgate_url = models.URLField(blank=True)
+	google_scholar_url = models.URLField(blank=True)
+	orcid_url = models.URLField(blank=True)
 	is_active = models.BooleanField(default=True)
 
 	class Meta:
@@ -104,7 +142,7 @@ class NewsPost(TimeStampedModel):
 	slug = models.SlugField(max_length=255, unique=True, blank=True)
 	excerpt = models.TextField(blank=True)
 	body = models.TextField(blank=True)
-	cover_image_url = models.URLField(blank=True)
+	cover_image_url = models.ImageField(upload_to=news_cover_upload_to, blank=True)
 	category = models.ForeignKey(
 		NewsCategory,
 		on_delete=models.SET_NULL,
@@ -146,7 +184,7 @@ class HomeHero(TimeStampedModel):
 	description = models.TextField(blank=True)
 	button_label = models.CharField(max_length=80, blank=True)
 	button_link = models.CharField(max_length=255, blank=True)
-	background_image_url = models.URLField(blank=True)
+	background_image_url = models.ImageField(upload_to=home_hero_background_upload_to, blank=True)
 	is_active = models.BooleanField(default=True)
 
 	def save(self, *args, **kwargs):
@@ -398,7 +436,7 @@ class Gallery(TimeStampedModel):
 
 class GalleryImage(TimeStampedModel):
 	gallery = models.ForeignKey(Gallery, on_delete=models.CASCADE, related_name="images")
-	image_url = models.URLField()
+	image_url = models.ImageField(upload_to=gallery_image_upload_to)
 	caption = models.CharField(max_length=255, blank=True)
 	order = models.PositiveIntegerField(default=0)
 	is_active = models.BooleanField(default=True)

@@ -28,6 +28,23 @@ def _load_local_env_file(env_path: Path) -> None:
         value = value.strip().strip('"').strip("'")
         os.environ.setdefault(key, value)
 
+
+def _env_bool(key: str, default: bool = False) -> bool:
+    value = os.getenv(key)
+    if value is None:
+        return default
+    return value.strip().lower() in {'1', 'true', 'yes', 'on'}
+
+
+def _env_int(key: str, default: int) -> int:
+    raw_value = os.getenv(key)
+    if raw_value is None:
+        return default
+    try:
+        return int(raw_value)
+    except (TypeError, ValueError):
+        return default
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 _load_local_env_file(BASE_DIR / '.env')
@@ -40,7 +57,7 @@ _load_local_env_file(BASE_DIR / '.env')
 SECRET_KEY = 'django-insecure-*dvv5-pk(iqvo^yj!3i(8k50h(v@#wdh94$by1!sr*c5%@6%=&'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = _env_bool('DEBUG', default=True)
 
 ALLOWED_HOSTS = []
 
@@ -109,6 +126,8 @@ if db_engine in {'postgres', 'postgresql'}:
             'PASSWORD': os.getenv('DB_PASSWORD', ''),
             'HOST': os.getenv('DB_HOST', 'localhost'),
             'PORT': os.getenv('DB_PORT', '5432'),
+            'CONN_MAX_AGE': _env_int('DB_CONN_MAX_AGE', 60),
+            'CONN_HEALTH_CHECKS': _env_bool('DB_CONN_HEALTH_CHECKS', default=True),
         }
     }
 else:
@@ -155,6 +174,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
@@ -163,6 +184,8 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
 }
+
+API_CACHE_TIMEOUT = _env_int('API_CACHE_TIMEOUT', 60)
 
 CORS_ALLOWED_ORIGINS = [
     origin.strip()
