@@ -10,46 +10,16 @@ type TeamItem = {
     slug: string;
     title: string;
     shortName: string;
+    tags: string[];
     lead: string;
     members: number;
     focus: string;
     description: string;
 };
 
-const teams: TeamItem[] = [
-    {
-        slug: 'data-intelligence',
-        title: 'Data Intelligence Team',
-        shortName: 'DI',
-        lead: 'Prof. A. El Idrissi',
-        members: 11,
-        focus: 'Machine Learning',
-        description:
-            'Developing robust data-driven models for prediction, decision support, and explainable AI in applied research settings.',
-    },
-    {
-        slug: 'software-systems',
-        title: 'Software Systems Team',
-        shortName: 'SS',
-        lead: 'Prof. M. Chafii',
-        members: 9,
-        focus: 'Distributed Systems',
-        description:
-            'Designing high-quality software architectures with emphasis on reliability, performance, and maintainability at scale.',
-    },
-    {
-        slug: 'smart-networks',
-        title: 'Smart Networks Team',
-        shortName: 'SN',
-        lead: 'Prof. N. Bensalah',
-        members: 8,
-        focus: 'IoT & Smart Infrastructure',
-        description:
-            'Building connected systems and intelligent sensing platforms for smart city, industry, and campus transformation projects.',
-    },
-];
-
 export default function TeamsPage() {
+    const [isLoading, setIsLoading] = useState(true);
+    const [hasError, setHasError] = useState(false);
     const [apiTeams, setApiTeams] = useState<TeamListItem[]>([]);
 
     useEffect(() => {
@@ -60,10 +30,16 @@ export default function TeamsPage() {
                 const data = await getTeams();
                 if (isMounted) {
                     setApiTeams(data);
+                    setHasError(false);
                 }
             } catch {
                 if (isMounted) {
+                    setHasError(true);
                     setApiTeams([]);
+                }
+            } finally {
+                if (isMounted) {
+                    setIsLoading(false);
                 }
             }
         };
@@ -80,12 +56,13 @@ export default function TeamsPage() {
               slug: team.slug,
               title: team.title,
               shortName: team.short_name || team.title.slice(0, 2).toUpperCase(),
+              tags: Array.isArray(team.tags) && team.tags.length ? team.tags.slice(0, 3) : ['Research'],
               lead: team.lead_name || 'Not specified',
               members: team.members_count || 0,
               focus: team.focus || 'Research focus to be updated.',
               description: team.overview || 'Team overview coming soon.',
           }))
-        : teams;
+                : [];
 
     return (
         <main className={styles.mainContainer}>
@@ -112,7 +89,13 @@ export default function TeamsPage() {
                             <article key={team.slug} className={styles.teamCard}>
                                 <div className={styles.cardTop}>
                                     <div className={styles.teamBadge}>{team.shortName}</div>
-                                    <span className={styles.focusTag}>{team.focus}</span>
+                                    <div className={styles.tagList}>
+                                        {team.tags.map((tag) => (
+                                            <span key={`${team.slug}-${tag}`} className={styles.focusTag}>
+                                                {tag}
+                                            </span>
+                                        ))}
+                                    </div>
                                 </div>
 
                                 <h3 className={styles.teamTitle}>{team.title}</h3>
@@ -134,6 +117,10 @@ export default function TeamsPage() {
                             </article>
                         ))}
                     </div>
+
+                    {isLoading && <p className={styles.sectionText}>Loading teams from API...</p>}
+                    {!isLoading && hasError && <p className={styles.sectionText}>Unable to load teams from API.</p>}
+                    {!isLoading && !hasError && teamsToRender.length === 0 && <p className={styles.sectionText}>No teams available.</p>}
                 </div>
             </section>
         </main>

@@ -1,0 +1,23 @@
+:root {
+  --lp2mgi-surface: #ffffff;
+  --lp2mgi-background: #f4f8fb;
+  --lp2mgi-border: #dbe5ef;
+  --lp2mgi-brand: #2a9d8f;
+  --lp2mgi-hero: #1b3a5c;
+}
+
+body {
+  background-color: var(--lp2mgi-background);
+}
+
+.cms-dashboard .cms-kpi-card {
+  border-color: color-mix(in srgb, var(--lp2mgi-brand) 20%, var(--lp2mgi-border));
+}
+
+.cms-dashboard .cms-kpi-card:hover {
+  border-color: color-mix(in srgb, var(--lp2mgi-brand) 50%, var(--lp2mgi-border));
+}
+
+#header {
+  background: linear-gradient(90deg, var(--lp2mgi-hero) 0%, #244b73 55%, #2a9d8f 100%);
+}

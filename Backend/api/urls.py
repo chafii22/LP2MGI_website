@@ -1,11 +1,27 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from .views import ContactMessageCreateView, HomeContentView, NewsPostViewSet, TeamViewSet, test_api
+from .views import (
+    ContactMessageCreateView,
+    ContentPageViewSet,
+    EventViewSet,
+    GalleryViewSet,
+    HomeContentView,
+    NewsPostViewSet,
+    ProjectViewSet,
+    PublicationViewSet,
+    TeamViewSet,
+    test_api,
+)
 
 router = DefaultRouter()
 router.register(r"teams", TeamViewSet, basename="team")
 router.register(r"news", NewsPostViewSet, basename="news")
+router.register(r"projects", ProjectViewSet, basename="project")
+router.register(r"publications", PublicationViewSet, basename="publication")
+router.register(r"events", EventViewSet, basename="event")
+router.register(r"pages", ContentPageViewSet, basename="content-page")
+router.register(r"galleries", GalleryViewSet, basename="gallery")
 
 urlpatterns = [
     path("test/", test_api, name="test-api"),

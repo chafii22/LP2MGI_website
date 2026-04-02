@@ -13,8 +13,24 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 import os
 from pathlib import Path
 
+
+def _load_local_env_file(env_path: Path) -> None:
+    if not env_path.exists():
+        return
+
+    for raw_line in env_path.read_text(encoding='utf-8').splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith('#') or '=' not in line:
+            continue
+
+        key, value = line.split('=', 1)
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        os.environ.setdefault(key, value)
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+_load_local_env_file(BASE_DIR / '.env')
 
 
 # Quick-start development settings - unsuitable for production
@@ -32,18 +48,24 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'unfold',
+    'unfold.contrib.filters',
+    'unfold.contrib.forms',
+    'unfold.contrib.inlines',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'rest_framework',
     'api',
     'core',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -58,7 +80,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -76,21 +98,25 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+db_engine = os.getenv('DB_ENGINE', 'sqlite').lower()
 
-if os.getenv('DB_ENGINE') == 'postgres':
-    DATABASES['default'] = {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME', 'lab_cms'),
-        'USER': os.getenv('DB_USER', 'postgres'),
-        'PASSWORD': os.getenv('DB_PASSWORD', ''),
-        'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', '5432'),
+if db_engine in {'postgres', 'postgresql'}:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DB_NAME', 'lab_cms'),
+            'USER': os.getenv('DB_USER', 'postgres'),
+            'PASSWORD': os.getenv('DB_PASSWORD', ''),
+            'HOST': os.getenv('DB_HOST', 'localhost'),
+            'PORT': os.getenv('DB_PORT', '5432'),
+        }
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
 
 
@@ -136,4 +162,167 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
+}
+
+CORS_ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv(
+        'CORS_ALLOWED_ORIGINS',
+        'http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001',
+    ).split(',')
+    if origin.strip()
+]
+
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r'^http://localhost(:\d+)?$',
+    r'^http://127\.0\.0\.1(:\d+)?$',
+]
+
+CORS_URLS_REGEX = r'^/api/.*$'
+
+UNFOLD = {
+    'SITE_TITLE': 'LP2MGI CMS',
+    'SITE_HEADER': 'LP2MGI Content Management',
+    'SITE_SUBHEADER': 'EST Casablanca',
+    'SITE_URL': os.getenv('ADMIN_VIEW_SITE_URL', 'http://localhost:3000/'),
+    'SITE_SYMBOL': 'dashboard',
+    'SHOW_HISTORY': True,
+    'SHOW_VIEW_ON_SITE': True,
+    'DASHBOARD_CALLBACK': 'core.admin.dashboard.dashboard_callback',
+    'STYLES': [
+        'core/css/admin-theme.css',
+    ],
+    'COLORS': {
+        'base': {
+            '50': '#f4f8fb',
+            '100': '#eaf1f7',
+            '200': '#dbe5ef',
+            '300': '#c3d1df',
+            '400': '#8ca3bb',
+            '500': '#52657d',
+            '600': '#334155',
+            '700': '#1f2e42',
+            '800': '#1b3a5c',
+            '900': '#13283f',
+            '950': '#0b1420',
+        },
+        'primary': {
+            '50': '#ebf8f6',
+            '100': '#d5f1ec',
+            '200': '#ade4dc',
+            '300': '#81d5ca',
+            '400': '#54c6b9',
+            '500': '#2a9d8f',
+            '600': '#218276',
+            '700': '#1b6a60',
+            '800': '#16544d',
+            '900': '#123f3b',
+            '950': '#0b2a27',
+        },
+        'font': {
+            'subtle-light': 'var(--color-base-500)',
+            'subtle-dark': 'var(--color-base-400)',
+            'default-light': 'var(--color-base-600)',
+            'default-dark': 'var(--color-base-300)',
+            'important-light': 'var(--color-base-900)',
+            'important-dark': 'var(--color-base-100)',
+        },
+    },
+    'SIDEBAR': {
+        'show_search': True,
+        'show_all_applications': False,
+        'navigation': [
+            {
+                'title': 'Dashboard',
+                'separator': True,
+                'items': [
+                    {
+                        'title': 'Overview',
+                        'icon': 'dashboard',
+                        'link': '/admin/',
+                    },
+                ],
+            },
+            {
+                'title': 'Website Content',
+                'items': [
+                    {
+                        'title': 'Homepage Hero',
+                        'icon': 'home',
+                        'link': '/admin/core/homehero/',
+                    },
+                    {
+                        'title': 'Homepage Metrics',
+                        'icon': 'monitoring',
+                        'link': '/admin/core/homemetric/',
+                    },
+                    {
+                        'title': 'News Posts',
+                        'icon': 'newspaper',
+                        'link': '/admin/core/newspost/',
+                    },
+                    {
+                        'title': 'Content Pages',
+                        'icon': 'description',
+                        'link': '/admin/core/contentpage/',
+                    },
+                    {
+                        'title': 'Events',
+                        'icon': 'event',
+                        'link': '/admin/core/event/',
+                    },
+                    {
+                        'title': 'Galleries',
+                        'icon': 'photo_library',
+                        'link': '/admin/core/gallery/',
+                    },
+                ],
+            },
+            {
+                'title': 'Research Data',
+                'items': [
+                    {
+                        'title': 'Teams',
+                        'icon': 'groups',
+                        'link': '/admin/core/team/',
+                    },
+                    {
+                        'title': 'Members',
+                        'icon': 'badge',
+                        'link': '/admin/core/member/',
+                    },
+                    {
+                        'title': 'Projects',
+                        'icon': 'science',
+                        'link': '/admin/core/project/',
+                    },
+                    {
+                        'title': 'Publications',
+                        'icon': 'menu_book',
+                        'link': '/admin/core/publication/',
+                    },
+                ],
+            },
+            {
+                'title': 'Messages & System',
+                'items': [
+                    {
+                        'title': 'Contact Messages',
+                        'icon': 'mail',
+                        'link': '/admin/core/contactmessage/',
+                    },
+                    {
+                        'title': 'Users',
+                        'icon': 'manage_accounts',
+                        'link': '/admin/auth/user/',
+                    },
+                    {
+                        'title': 'Groups',
+                        'icon': 'shield',
+                        'link': '/admin/auth/group/',
+                    },
+                ],
+            },
+        ],
+    },
 }

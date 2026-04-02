@@ -3,6 +3,7 @@ export type TeamListItem = {
   slug: string;
   title: string;
   short_name: string;
+  tags: string[];
   lead_name: string;
   focus: string;
   domain: string;
@@ -79,6 +80,81 @@ export type ContactMessagePayload = {
   message: string;
 };
 
+export type PublicationItem = {
+  id: number;
+  slug: string;
+  title: string;
+  publication_type: string;
+  year: number | null;
+  abstract: string;
+  file_pdf_url: string;
+  team_slug: string | null;
+  is_published: boolean;
+  authors: Array<{
+    id: number;
+    full_name: string;
+    role: string;
+    expertise: string;
+    email: string;
+    photo_url: string;
+    is_active: boolean;
+    order: number;
+  }>;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ProjectItem = {
+  id: number;
+  slug: string;
+  title: string;
+  description: string;
+  date_start: string | null;
+  date_end: string | null;
+  status: string;
+  team_slug: string;
+  is_active: boolean;
+};
+
+export type EventItem = {
+  id: number;
+  slug: string;
+  title: string;
+  event_date: string | null;
+  location: string;
+  description: string;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ContentPageItem = {
+  id: number;
+  slug: string;
+  title: string;
+  content: string;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type GalleryItem = {
+  id: number;
+  slug: string;
+  title: string;
+  description: string;
+  is_published: boolean;
+  images: Array<{
+    id: number;
+    image_url: string;
+    caption: string;
+    order: number;
+    is_active: boolean;
+  }>;
+  created_at: string;
+  updated_at: string;
+};
+
 type Paginated<T> = {
   count: number;
   next: string | null;
@@ -86,27 +162,79 @@ type Paginated<T> = {
   results: T[];
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") ?? "/api";
+const configuredApiBase = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
 
-function toApiUrl(path: string): string {
-  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-  return `${API_BASE}${normalizedPath}`;
+function normalizeApiBase(base: string): string {
+  const trimmed = base.trim().replace(/\/$/, "");
+
+  if (!/^https?:\/\//i.test(trimmed)) {
+    return trimmed || "/api";
+  }
+
+  try {
+    const parsed = new URL(trimmed);
+    if (!parsed.pathname || parsed.pathname === "/") {
+      parsed.pathname = "/api";
+      return parsed.toString().replace(/\/$/, "");
+    }
+    return parsed.toString().replace(/\/$/, "");
+  } catch {
+    return trimmed || "/api";
+  }
+}
+
+function getApiBaseCandidates(): string[] {
+  const primary = normalizeApiBase(configuredApiBase || "/api");
+  const candidates = [primary];
+
+  const devFallbacks = ["http://127.0.0.1:8000/api", "http://localhost:8000/api"];
+  for (const fallback of devFallbacks) {
+    if (!candidates.includes(fallback)) {
+      candidates.push(fallback);
+    }
+  }
+
+  return candidates;
+}
+
+function ensureTrailingSlash(path: string): string {
+  const [pathname, suffix = ""] = path.split(/([?#].*)/, 2);
+  const normalizedPathname = pathname.endsWith("/") ? pathname : `${pathname}/`;
+  return `${normalizedPathname}${suffix}`;
 }
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(toApiUrl(path), {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...(init?.headers ?? {}),
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Request failed: ${response.status}`);
+  const hasBody = init?.body !== undefined && init?.body !== null;
+  const headers = new Headers(init?.headers);
+  if (hasBody && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
   }
 
-  return response.json() as Promise<T>;
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  const pathWithSlash = ensureTrailingSlash(normalizedPath);
+
+  let lastError: unknown;
+  for (const base of getApiBaseCandidates()) {
+    const url = `${base}${pathWithSlash}`;
+
+    try {
+      const response = await fetch(url, {
+        ...init,
+        headers,
+      });
+
+      if (!response.ok) {
+        lastError = new Error(`Request failed (${response.status}) for ${url}`);
+        continue;
+      }
+
+      return response.json() as Promise<T>;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new Error("Request failed for all API bases");
 }
 
 function normalizeList<T>(payload: T[] | Paginated<T>): T[] {
@@ -118,31 +246,56 @@ function normalizeList<T>(payload: T[] | Paginated<T>): T[] {
 }
 
 export async function getHomeContent(): Promise<HomeContent> {
-  return requestJson<HomeContent>("/home/");
+  return requestJson<HomeContent>("/home");
 }
 
 export async function getTeams(): Promise<TeamListItem[]> {
-  const payload = await requestJson<TeamListItem[] | Paginated<TeamListItem>>("/teams/");
+  const payload = await requestJson<TeamListItem[] | Paginated<TeamListItem>>("/teams");
   return normalizeList(payload);
 }
 
 export async function getTeamBySlug(slug: string): Promise<TeamDetail> {
-  return requestJson<TeamDetail>(`/teams/${slug}/`);
+  return requestJson<TeamDetail>(`/teams/${slug}`);
 }
 
 export async function getNews(featured?: boolean): Promise<NewsItem[]> {
   const suffix = featured ? "?featured=true" : "";
-  const payload = await requestJson<NewsItem[] | Paginated<NewsItem>>(`/news/${suffix}`);
+  const payload = await requestJson<NewsItem[] | Paginated<NewsItem>>(`/news${suffix}`);
   return normalizeList(payload);
 }
 
 export async function getNewsBySlug(slug: string): Promise<NewsItem> {
-  return requestJson<NewsItem>(`/news/${slug}/`);
+  return requestJson<NewsItem>(`/news/${slug}`);
 }
 
 export async function createContactMessage(payload: ContactMessagePayload): Promise<{ id: number; message: string }> {
-  return requestJson<{ id: number; message: string }>("/contact/", {
+  return requestJson<{ id: number; message: string }>("/contact", {
     method: "POST",
     body: JSON.stringify(payload),
   });
+}
+
+export async function getPublications(): Promise<PublicationItem[]> {
+  const payload = await requestJson<PublicationItem[] | Paginated<PublicationItem>>("/publications");
+  return normalizeList(payload);
+}
+
+export async function getProjects(): Promise<ProjectItem[]> {
+  const payload = await requestJson<ProjectItem[] | Paginated<ProjectItem>>("/projects");
+  return normalizeList(payload);
+}
+
+export async function getEvents(): Promise<EventItem[]> {
+  const payload = await requestJson<EventItem[] | Paginated<EventItem>>("/events");
+  return normalizeList(payload);
+}
+
+export async function getContentPages(): Promise<ContentPageItem[]> {
+  const payload = await requestJson<ContentPageItem[] | Paginated<ContentPageItem>>("/pages");
+  return normalizeList(payload);
+}
+
+export async function getGalleries(): Promise<GalleryItem[]> {
+  const payload = await requestJson<GalleryItem[] | Paginated<GalleryItem>>("/galleries");
+  return normalizeList(payload);
 }

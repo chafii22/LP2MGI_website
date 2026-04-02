@@ -4,13 +4,33 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from core.models import HomeHero, HomeMetric, Member, NewsPost, Team, TeamMembership
+from core.models import (
+    ContentPage,
+    Event,
+    Gallery,
+    HomeHero,
+    HomeMetric,
+    Member,
+    NewsPost,
+    Project,
+    ProjectParticipation,
+    Publication,
+    PublicationAuthor,
+    Team,
+    TeamMembership,
+)
 
 from .serializers import (
+    ContentPageSerializer,
     ContactMessageCreateSerializer,
+    EventSerializer,
+    GallerySerializer,
     HomeHeroSerializer,
     HomeMetricSerializer,
     NewsPostSerializer,
+    ProjectDetailSerializer,
+    ProjectListSerializer,
+    PublicationSerializer,
     TeamDetailSerializer,
     TeamListSerializer,
 )
@@ -95,3 +115,68 @@ class ContactMessageCreateView(APIView):
             },
             status=201,
         )
+
+
+class ProjectViewSet(viewsets.ReadOnlyModelViewSet):
+    pagination_class = None
+    lookup_field = "slug"
+
+    def get_queryset(self):
+        queryset = Project.objects.filter(is_active=True).select_related("team").prefetch_related(
+            Prefetch("participations", queryset=ProjectParticipation.objects.select_related("member").order_by("id"))
+        )
+
+        team = self.request.query_params.get("team")
+        if team:
+            queryset = queryset.filter(team__slug=team)
+
+        return queryset.order_by("-created_at")
+
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return ProjectDetailSerializer
+        return ProjectListSerializer
+
+
+class PublicationViewSet(viewsets.ReadOnlyModelViewSet):
+    pagination_class = None
+    serializer_class = PublicationSerializer
+    lookup_field = "slug"
+
+    def get_queryset(self):
+        queryset = Publication.objects.filter(is_published=True).select_related("team").prefetch_related(
+            Prefetch("author_links", queryset=PublicationAuthor.objects.select_related("member").order_by("order", "id"))
+        )
+
+        team = self.request.query_params.get("team")
+        if team:
+            queryset = queryset.filter(team__slug=team)
+
+        return queryset.order_by("-year", "-created_at")
+
+
+class EventViewSet(viewsets.ReadOnlyModelViewSet):
+    pagination_class = None
+    serializer_class = EventSerializer
+    lookup_field = "slug"
+
+    def get_queryset(self):
+        return Event.objects.filter(is_published=True).order_by("-event_date", "-created_at")
+
+
+class ContentPageViewSet(viewsets.ReadOnlyModelViewSet):
+    pagination_class = None
+    serializer_class = ContentPageSerializer
+    lookup_field = "slug"
+
+    def get_queryset(self):
+        return ContentPage.objects.filter(is_published=True).order_by("title")
+
+
+class GalleryViewSet(viewsets.ReadOnlyModelViewSet):
+    pagination_class = None
+    serializer_class = GallerySerializer
+    lookup_field = "slug"
+
+    def get_queryset(self):
+        return Gallery.objects.filter(is_published=True).prefetch_related("images").order_by("title")

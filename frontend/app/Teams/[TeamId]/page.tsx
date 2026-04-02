@@ -9,150 +9,6 @@ import { getTeamBySlug, type TeamDetail, type TeamMember } from '@/lib/api';
 
 type RoleFilter = 'All' | string;
 
-const FALLBACK_TEAMS: Record<string, TeamDetail> = {
-  'data-intelligence': {
-    id: 1001,
-    slug: 'data-intelligence',
-    title: 'Data Intelligence Team',
-    short_name: 'DI',
-    lead_name: 'Prof. A. El Idrissi',
-    focus: 'Machine Learning',
-    domain: 'Machine Learning and Explainable AI',
-    overview:
-      'The Data Intelligence Team develops predictive and interpretable models for decision support in healthcare, education, and industrial optimization.',
-    members_count: 5,
-    members: [
-      {
-        id: 2001,
-        full_name: 'Prof. A. El Idrissi',
-        role: 'Professor',
-        expertise: 'Trustworthy AI and model interpretability',
-        email: '',
-        photo_url: '',
-        is_active: true,
-        is_leader: true,
-        order: 1,
-      },
-      {
-        id: 2002,
-        full_name: 'Dr. Y. Benomar',
-        role: 'Professor',
-        expertise: 'Statistical learning and probabilistic models',
-        email: '',
-        photo_url: '',
-        is_active: true,
-        is_leader: false,
-        order: 2,
-      },
-      {
-        id: 2003,
-        full_name: 'M. El Mansouri',
-        role: 'PhD Student',
-        expertise: 'Multimodal deep learning',
-        email: '',
-        photo_url: '',
-        is_active: true,
-        is_leader: false,
-        order: 3,
-      },
-    ],
-  },
-  'software-systems': {
-    id: 1002,
-    slug: 'software-systems',
-    title: 'Software Systems Team',
-    short_name: 'SS',
-    lead_name: 'Prof. M. Chafii',
-    focus: 'Distributed Systems',
-    domain: 'Distributed Systems and Software Architecture',
-    overview:
-      'The Software Systems Team focuses on resilient and scalable software architecture for modern applications, with emphasis on quality and reliability.',
-    members_count: 5,
-    members: [
-      {
-        id: 2101,
-        full_name: 'Prof. M. Chafii',
-        role: 'Professor',
-        expertise: 'Software architecture and reliability',
-        email: '',
-        photo_url: '',
-        is_active: true,
-        is_leader: true,
-        order: 1,
-      },
-      {
-        id: 2102,
-        full_name: 'Dr. H. Laghmari',
-        role: 'Professor',
-        expertise: 'Formal methods and verification',
-        email: '',
-        photo_url: '',
-        is_active: true,
-        is_leader: false,
-        order: 2,
-      },
-      {
-        id: 2103,
-        full_name: 'R. Fassi',
-        role: 'Engineer',
-        expertise: 'Cloud-native DevOps and CI/CD',
-        email: '',
-        photo_url: '',
-        is_active: true,
-        is_leader: false,
-        order: 3,
-      },
-    ],
-  },
-  'smart-networks': {
-    id: 1003,
-    slug: 'smart-networks',
-    title: 'Smart Networks Team',
-    short_name: 'SN',
-    lead_name: 'Prof. N. Bensalah',
-    focus: 'IoT & Smart Infrastructure',
-    domain: 'IoT, Smart Infrastructure, and Edge Systems',
-    overview:
-      'The Smart Networks Team designs connected systems for intelligent environments, including campuses and smart city contexts.',
-    members_count: 5,
-    members: [
-      {
-        id: 2201,
-        full_name: 'Prof. N. Bensalah',
-        role: 'Professor',
-        expertise: 'IoT architecture and edge analytics',
-        email: '',
-        photo_url: '',
-        is_active: true,
-        is_leader: true,
-        order: 1,
-      },
-      {
-        id: 2202,
-        full_name: 'Dr. L. Ouhsine',
-        role: 'Professor',
-        expertise: 'Wireless communication protocols',
-        email: '',
-        photo_url: '',
-        is_active: true,
-        is_leader: false,
-        order: 2,
-      },
-      {
-        id: 2203,
-        full_name: 'K. El Hamdani',
-        role: 'Engineer',
-        expertise: 'Embedded systems integration',
-        email: '',
-        photo_url: '',
-        is_active: true,
-        is_leader: false,
-        order: 3,
-      },
-    ],
-  },
-};
-
 function getInitials(name: string) {
   return name
     .split(' ')
@@ -191,14 +47,8 @@ export default function TeamDetailPage() {
         }
       } catch {
         if (isMounted) {
-          const fallbackTeam = FALLBACK_TEAMS[teamSlug];
-          if (fallbackTeam) {
-            setHasError(false);
-            setTeam(fallbackTeam);
-          } else {
-            setHasError(true);
-            setTeam(null);
-          }
+          setHasError(true);
+          setTeam(null);
         }
       } finally {
         if (isMounted) {
@@ -253,7 +103,7 @@ export default function TeamDetailPage() {
       : ['Research program details are being updated.'];
   }, [team]);
 
-  if (!teamSlug || hasError || (!isLoading && !team)) {
+  if (!teamSlug) {
     return (
       <main className={styles.mainContainer}>
         <section className={styles.headerSection}>
@@ -268,6 +118,48 @@ export default function TeamDetailPage() {
             <p className={styles.subtitle}>Research Unit</p>
             <h1 className={styles.title}>Team Not Found</h1>
             <p className={styles.headerDescription}>The team you requested does not exist or is not available yet.</p>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  if (hasError) {
+    return (
+      <main className={styles.mainContainer}>
+        <section className={styles.headerSection}>
+          <div className={styles.sectionInner}>
+            <nav className={styles.breadcrumb} aria-label="Breadcrumb">
+              <Link href="/">Home</Link>
+              <span>/</span>
+              <Link href="/Teams">Teams</Link>
+              <span>/</span>
+              <span className={styles.currentPath}>Unavailable</span>
+            </nav>
+            <p className={styles.subtitle}>Research Unit</p>
+            <h1 className={styles.title}>Team Data Unavailable</h1>
+            <p className={styles.headerDescription}>Unable to load team details from the API right now.</p>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  if (!isLoading && !team) {
+    return (
+      <main className={styles.mainContainer}>
+        <section className={styles.headerSection}>
+          <div className={styles.sectionInner}>
+            <nav className={styles.breadcrumb} aria-label="Breadcrumb">
+              <Link href="/">Home</Link>
+              <span>/</span>
+              <Link href="/Teams">Teams</Link>
+              <span>/</span>
+              <span className={styles.currentPath}>Unknown Team</span>
+            </nav>
+            <p className={styles.subtitle}>Research Unit</p>
+            <h1 className={styles.title}>Team Not Found</h1>
+            <p className={styles.headerDescription}>The team you requested does not exist.</p>
           </div>
         </section>
       </main>

@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.utils.text import slugify
 
@@ -14,6 +15,7 @@ class Team(TimeStampedModel):
 	slug = models.SlugField(max_length=120, unique=True, blank=True)
 	title = models.CharField(max_length=200)
 	short_name = models.CharField(max_length=20, blank=True)
+	tags = models.JSONField(default=list, blank=True)
 	lead_name = models.CharField(max_length=180, blank=True)
 	domain = models.CharField(max_length=180, blank=True)
 	focus = models.CharField(max_length=180, blank=True)
@@ -182,3 +184,227 @@ class ContactMessage(TimeStampedModel):
 
 	def __str__(self):
 		return f"{self.full_name} - {self.subject}"
+
+
+class ProjectStatus(models.TextChoices):
+	ONGOING = "ongoing", "Ongoing"
+	COMPLETED = "completed", "Completed"
+	PLANNED = "planned", "Planned"
+
+
+class Project(TimeStampedModel):
+	slug = models.SlugField(max_length=160, unique=True, blank=True)
+	title = models.CharField(max_length=220)
+	description = models.TextField(blank=True)
+	date_start = models.DateField(null=True, blank=True)
+	date_end = models.DateField(null=True, blank=True)
+	status = models.CharField(max_length=20, choices=ProjectStatus.choices, default=ProjectStatus.ONGOING)
+	team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="projects")
+	participants = models.ManyToManyField(Member, through="ProjectParticipation", blank=True, related_name="projects")
+	created_by = models.ForeignKey(
+		settings.AUTH_USER_MODEL,
+		on_delete=models.SET_NULL,
+		null=True,
+		blank=True,
+		related_name="managed_projects",
+	)
+	is_active = models.BooleanField(default=True)
+
+	class Meta:
+		ordering = ["-created_at"]
+
+	def save(self, *args, **kwargs):
+		if not self.slug:
+			base_slug = slugify(self.title) or "project"
+			slug = base_slug
+			index = 2
+			while Project.objects.exclude(pk=self.pk).filter(slug=slug).exists():
+				slug = f"{base_slug}-{index}"
+				index += 1
+			self.slug = slug
+		super().save(*args, **kwargs)
+
+	def __str__(self):
+		return self.title
+
+
+class ProjectParticipation(TimeStampedModel):
+	member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="project_participations")
+	project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="participations")
+	role = models.CharField(max_length=80, blank=True)
+
+	class Meta:
+		constraints = [
+			models.UniqueConstraint(fields=["member", "project"], name="unique_member_project"),
+		]
+
+	def __str__(self):
+		return f"{self.member.full_name} in {self.project.title}"
+
+
+class PublicationType(models.TextChoices):
+	JOURNAL = "journal", "Journal"
+	CONFERENCE = "conference", "Conference"
+	BOOK = "book", "Book"
+	THESIS = "thesis", "Thesis"
+	OTHER = "other", "Other"
+
+
+class Publication(TimeStampedModel):
+	slug = models.SlugField(max_length=180, unique=True, blank=True)
+	title = models.CharField(max_length=260)
+	publication_type = models.CharField(max_length=20, choices=PublicationType.choices, default=PublicationType.OTHER)
+	year = models.PositiveIntegerField(null=True, blank=True)
+	abstract = models.TextField(blank=True)
+	file_pdf_url = models.URLField(blank=True)
+	team = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, blank=True, related_name="publications")
+	authors = models.ManyToManyField(Member, through="PublicationAuthor", blank=True, related_name="publications")
+	created_by = models.ForeignKey(
+		settings.AUTH_USER_MODEL,
+		on_delete=models.SET_NULL,
+		null=True,
+		blank=True,
+		related_name="managed_publications",
+	)
+	is_published = models.BooleanField(default=True)
+
+	class Meta:
+		ordering = ["-year", "-created_at"]
+
+	def save(self, *args, **kwargs):
+		if not self.slug:
+			base_slug = slugify(self.title) or "publication"
+			slug = base_slug
+			index = 2
+			while Publication.objects.exclude(pk=self.pk).filter(slug=slug).exists():
+				slug = f"{base_slug}-{index}"
+				index += 1
+			self.slug = slug
+		super().save(*args, **kwargs)
+
+	def __str__(self):
+		return self.title
+
+
+class PublicationAuthor(TimeStampedModel):
+	member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="publication_links")
+	publication = models.ForeignKey(Publication, on_delete=models.CASCADE, related_name="author_links")
+	order = models.PositiveIntegerField(default=0)
+
+	class Meta:
+		ordering = ["order", "id"]
+		constraints = [
+			models.UniqueConstraint(fields=["member", "publication"], name="unique_member_publication"),
+		]
+
+	def __str__(self):
+		return f"{self.member.full_name} - {self.publication.title}"
+
+
+class Event(TimeStampedModel):
+	slug = models.SlugField(max_length=180, unique=True, blank=True)
+	title = models.CharField(max_length=220)
+	event_date = models.DateField(null=True, blank=True)
+	location = models.CharField(max_length=220, blank=True)
+	description = models.TextField(blank=True)
+	created_by = models.ForeignKey(
+		settings.AUTH_USER_MODEL,
+		on_delete=models.SET_NULL,
+		null=True,
+		blank=True,
+		related_name="managed_events",
+	)
+	is_published = models.BooleanField(default=True)
+
+	class Meta:
+		ordering = ["-event_date", "-created_at"]
+
+	def save(self, *args, **kwargs):
+		if not self.slug:
+			base_slug = slugify(self.title) or "event"
+			slug = base_slug
+			index = 2
+			while Event.objects.exclude(pk=self.pk).filter(slug=slug).exists():
+				slug = f"{base_slug}-{index}"
+				index += 1
+			self.slug = slug
+		super().save(*args, **kwargs)
+
+	def __str__(self):
+		return self.title
+
+
+class ContentPage(TimeStampedModel):
+	slug = models.SlugField(max_length=180, unique=True, blank=True)
+	title = models.CharField(max_length=220)
+	content = models.TextField(blank=True)
+	created_by = models.ForeignKey(
+		settings.AUTH_USER_MODEL,
+		on_delete=models.SET_NULL,
+		null=True,
+		blank=True,
+		related_name="managed_pages",
+	)
+	is_published = models.BooleanField(default=True)
+
+	class Meta:
+		ordering = ["title"]
+
+	def save(self, *args, **kwargs):
+		if not self.slug:
+			base_slug = slugify(self.title) or "page"
+			slug = base_slug
+			index = 2
+			while ContentPage.objects.exclude(pk=self.pk).filter(slug=slug).exists():
+				slug = f"{base_slug}-{index}"
+				index += 1
+			self.slug = slug
+		super().save(*args, **kwargs)
+
+	def __str__(self):
+		return self.title
+
+
+class Gallery(TimeStampedModel):
+	slug = models.SlugField(max_length=180, unique=True, blank=True)
+	title = models.CharField(max_length=220)
+	description = models.TextField(blank=True)
+	created_by = models.ForeignKey(
+		settings.AUTH_USER_MODEL,
+		on_delete=models.SET_NULL,
+		null=True,
+		blank=True,
+		related_name="managed_galleries",
+	)
+	is_published = models.BooleanField(default=True)
+
+	class Meta:
+		ordering = ["title"]
+
+	def save(self, *args, **kwargs):
+		if not self.slug:
+			base_slug = slugify(self.title) or "gallery"
+			slug = base_slug
+			index = 2
+			while Gallery.objects.exclude(pk=self.pk).filter(slug=slug).exists():
+				slug = f"{base_slug}-{index}"
+				index += 1
+			self.slug = slug
+		super().save(*args, **kwargs)
+
+	def __str__(self):
+		return self.title
+
+
+class GalleryImage(TimeStampedModel):
+	gallery = models.ForeignKey(Gallery, on_delete=models.CASCADE, related_name="images")
+	image_url = models.URLField()
+	caption = models.CharField(max_length=255, blank=True)
+	order = models.PositiveIntegerField(default=0)
+	is_active = models.BooleanField(default=True)
+
+	class Meta:
+		ordering = ["order", "id"]
+
+	def __str__(self):
+		return f"{self.gallery.title} image #{self.pk}"

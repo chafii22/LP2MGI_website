@@ -6,43 +6,11 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Styles from './Home.module.css';
 import { getHomeContent, getTeams, type NewsItem, type TeamListItem } from '@/lib/api';
 
-const defaultMetrics = [
-  { label: 'Researchers', value: '45+' },
-  { label: 'Publications', value: '120+' },
-  { label: 'Projects', value: '30+' },
-  { label: 'Partners', value: '15+' },
-];
-
-const defaultFeaturedNews = [
-  {
-    slug: 'sample-news-1',
-    title: 'Exciting Research Update 1',
-    tags: ['ai', 'publication', 'conference'],
-    cover_image_url: '',
-  },
-  {
-    slug: 'sample-news-2',
-    title: 'Exciting Research Update 2',
-    tags: ['event', 'research'],
-    cover_image_url: '',
-  },
-  {
-    slug: 'sample-news-3',
-    title: 'Exciting Research Update 3',
-    tags: ['workshop', 'innovation'],
-    cover_image_url: '',
-  },
-] as const;
-
-const defaultTeams = [
-  { slug: 'team-alpha', title: 'Team Alpha', short_name: 'A', focus: 'Artificial Intelligence & Data Science' },
-  { slug: 'team-beta', title: 'Team Beta', short_name: 'B', focus: 'Advanced Materials & Systems' },
-  { slug: 'team-gamma', title: 'Team Gamma', short_name: 'G', focus: 'Industrial & Process Engineering' },
-] as const;
-
 export default function Home() {
   const newsCarouselRef = useRef<HTMLDivElement | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [homeFailed, setHomeFailed] = useState(false);
+  const [teamsFailed, setTeamsFailed] = useState(false);
   const [hero, setHero] = useState<{ subtitle: string; title: string; description: string; button_label: string; button_link: string } | null>(null);
   const [metrics, setMetrics] = useState<Array<{ label: string; value: string }>>([]);
   const [featuredNews, setFeaturedNews] = useState<NewsItem[]>([]);
@@ -50,67 +18,80 @@ export default function Home() {
 
   useEffect(() => {
     let isMounted = true;
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
 
     const loadHomeData = async () => {
+      setIsLoading(true);
+      let allSucceeded = false;
+
       try {
-        const [homeContent, teamList] = await Promise.all([getHomeContent(), getTeams()]);
+        const [homeResult, teamsResult] = await Promise.allSettled([getHomeContent(), getTeams()]);
 
         if (!isMounted) {
           return;
         }
 
-        setHero(homeContent.hero);
-        setMetrics(homeContent.metrics.map((metric) => ({ label: metric.label, value: metric.value })));
-        setFeaturedNews(homeContent.featured_news);
-        setTeams(teamList);
-      } catch {
-        if (!isMounted) {
-          return;
+        if (homeResult.status === 'fulfilled') {
+          setHero(homeResult.value.hero);
+          setMetrics(homeResult.value.metrics.map((metric) => ({ label: metric.label, value: metric.value })));
+          setFeaturedNews(homeResult.value.featured_news);
+          setHomeFailed(false);
+        } else {
+          setHomeFailed(true);
+          setHero(null);
+          setMetrics([]);
+          setFeaturedNews([]);
         }
+
+        if (teamsResult.status === 'fulfilled') {
+          setTeams(teamsResult.value);
+          setTeamsFailed(false);
+        } else {
+          setTeamsFailed(true);
+          setTeams([]);
+        }
+
+        allSucceeded = homeResult.status === 'fulfilled' && teamsResult.status === 'fulfilled';
       } finally {
         if (isMounted) {
           setIsLoading(false);
+
+          if (!allSucceeded) {
+            retryTimer = setTimeout(() => {
+              void loadHomeData();
+            }, 3000);
+          }
         }
       }
     };
 
-    loadHomeData();
+    void loadHomeData();
 
     return () => {
       isMounted = false;
+      if (retryTimer) {
+        clearTimeout(retryTimer);
+      }
     };
   }, []);
 
-  const metricsToRender = metrics.length ? metrics : defaultMetrics;
-
-  const featuredNewsToRender = useMemo(() => {
-    if (featuredNews.length) {
-      return featuredNews.slice(0, 6).map((item) => ({
+  const featuredNewsToRender = useMemo(
+    () =>
+      featuredNews.slice(0, 6).map((item) => ({
         slug: item.slug,
         title: item.title,
         tags: item.tags,
         cover_image_url: item.cover_image_url,
-      }));
-    }
+      })),
+    [featuredNews],
+  );
 
-    return defaultFeaturedNews;
-  }, [featuredNews]);
+  const teamsToRender = teams.slice(0, 3);
 
-  const teamsToRender = teams.length ? teams.slice(0, 3) : defaultTeams;
-
-  const membersToRender = teams.length
-    ? teams
-        .filter((team) => team.lead_name)
-        .slice(0, 6)
-        .map((team) => ({ name: team.lead_name, role: `Lead - ${team.title}` }))
-    : [
-        { name: 'Alice Smith', role: 'Lead Researcher' },
-        { name: 'Bob Johnson', role: 'Senior Analyst' },
-        { name: 'Claire Davis', role: 'PhD Candidate' },
-        { name: 'David Wilson', role: 'Data Scientist' },
-        { name: 'Eva Brown', role: 'Research Assistant' },
-        { name: 'Frank Miller', role: 'Engineer' },
-      ];
+  const membersToRender = teams
+    .filter((team) => team.lead_name)
+    .slice(0, 6)
+    .map((team) => ({ name: team.lead_name, role: `Lead - ${team.title}` }));
 
   const scrollNews = (direction: 'left' | 'right') => {
     const container = newsCarouselRef.current;
@@ -133,19 +114,25 @@ export default function Home() {
         <div className={Styles.heroOverlay}></div>
         <div className={Styles.heroContent}>
           <p className={Styles.heroSubtitle}>
-            {hero?.subtitle || 'Welcome to Our Lab'}
+            {hero?.subtitle || 'LP2MGI Laboratory'}
           </p>
           <h1 className={Styles.heroTitle}>
-            {hero?.title || 'Research & Innovation at LP2MGI'}
+            {hero?.title || 'Research and Innovation at LP2MGI'}
           </h1>
           <p className={Styles.heroDescription}>
-            {hero?.description || 'A multidisciplinary research laboratory dedicated to the advancement of science and engineering through collaborative innovation.'}
+            {hero?.description || 'Live content is loaded from the backend API.'}
           </p>
           <Link href={hero?.button_link || '/Overview'} className={Styles.heroButton}>
-            {hero?.button_label || 'Discover Our Work'}
+            {hero?.button_label || 'Explore'}
           </Link>
         </div>
       </section>
+
+      {homeFailed && teamsFailed && !isLoading && (
+        <p style={{ textAlign: 'center', color: '#b42318', margin: '1rem 0 0' }}>
+          Unable to load homepage data from the API (home and teams endpoints failed). Retrying automatically...
+        </p>
+      )}
 
       {/* 2. Lab Numbers Section */}
       <section className={Styles.metricsSection}>
@@ -153,13 +140,16 @@ export default function Home() {
           <p className={Styles.sectionSubtitle}>Metrics</p>
           <h2 className={Styles.sectionTitle}>Our Impact in Numbers</h2>
           <div className={Styles.metricsGrid}>
-            {metricsToRender.map((stat, i) => (
+            {metrics.map((stat, i) => (
               <div key={i} className={Styles.metricCard}>
                 <p className={Styles.metricValue}>{stat.value}</p>
                 <p className={Styles.metricLabel}>{stat.label}</p>
               </div>
             ))}
           </div>
+          {!isLoading && metrics.length === 0 && (
+            <p style={{ color: 'var(--text-muted)', marginTop: '1rem' }}>No metrics available from API.</p>
+          )}
         </div>
       </section>
 
@@ -221,6 +211,10 @@ export default function Home() {
               ))}
             </div>
 
+            {!isLoading && featuredNewsToRender.length === 0 && (
+              <p style={{ color: 'var(--text-muted)', marginTop: '0.75rem' }}>No news available from API.</p>
+            )}
+
             <button
               type="button"
               className={`${Styles.newsArrow} ${Styles.newsArrowRight}`}
@@ -251,6 +245,11 @@ export default function Home() {
               </Link>
             ))}
           </div>
+          {!isLoading && teamsToRender.length === 0 && (
+            <p style={{ color: 'var(--text-muted)', marginTop: '0.75rem', textAlign: 'center' }}>
+              {teamsFailed ? 'Unable to load teams from API.' : 'No teams available from API.'}
+            </p>
+          )}
         </div>
       </section>
 
@@ -277,6 +276,11 @@ export default function Home() {
               );
             })}
           </div>
+          {!isLoading && membersToRender.length === 0 && (
+            <p style={{ color: 'var(--text-muted)', marginTop: '-1rem', marginBottom: '2rem', textAlign: 'center' }}>
+              {teamsFailed ? 'Unable to load members because teams data failed to load.' : 'No members available from API.'}
+            </p>
+          )}
           <div className={Styles.showMoreContainer}>
             <Link href="/Teams" className={Styles.showMoreLink}>
               Show more members
