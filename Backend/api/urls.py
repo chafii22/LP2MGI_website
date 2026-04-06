@@ -8,6 +8,7 @@ from .views import (
     GalleryViewSet,
     HomeContentView,
     NewsPostViewSet,
+    OverviewContentView,
     ProjectViewSet,
     PublicationViewSet,
     TeamViewSet,
@@ -26,6 +27,7 @@ router.register(r"galleries", GalleryViewSet, basename="gallery")
 urlpatterns = [
     path("test/", test_api, name="test-api"),
     path("home/", HomeContentView.as_view(), name="home-content"),
+    path("overview/", OverviewContentView.as_view(), name="overview-content"),
     path("contact/", ContactMessageCreateView.as_view(), name="contact-message-create"),
     path("", include(router.urls)),
 ]

@@ -1,0 +1,233 @@
+.mainContainer {
+	min-height: 100vh;
+	background-color: var(--surface);
+}
+
+.maxWidthContainer {
+	width: min(1200px, 100% - 3rem);
+	margin: 0 auto;
+}
+
+.headerSection {
+	padding: 3.5rem 0 2rem;
+	background-color: var(--surface-muted);
+}
+
+.sectionSubtitle {
+	color: var(--brand);
+	font-weight: 500;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	font-size: 0.875rem;
+	margin-bottom: 0.75rem;
+}
+
+.sectionTitle {
+	color: var(--foreground);
+	margin: 0;
+	line-height: 1.25;
+}
+
+.sectionDescription {
+	color: var(--text-muted);
+	margin-top: 0.85rem;
+	margin-bottom: 0;
+	max-width: 760px;
+	line-height: 1.7;
+}
+
+.filtersSection {
+	padding: 1.6rem 0 1.2rem;
+	background-color: var(--surface);
+	border-bottom: 1px solid var(--border-color);
+}
+
+.filtersGrid {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 1rem;
+}
+
+@media (min-width: 768px) {
+	.filtersGrid {
+		grid-template-columns: 1.7fr 1fr 1fr;
+	}
+}
+
+.filterField {
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+}
+
+.filterLabel {
+	color: var(--foreground);
+	font-size: 0.85rem;
+	font-weight: 600;
+}
+
+.filterInput,
+.filterSelect {
+	height: 44px;
+	border-radius: 0.65rem;
+	border: 1px solid var(--border-color);
+	background-color: var(--surface);
+	color: var(--foreground);
+	padding: 0 0.85rem;
+	font-size: 0.95rem;
+}
+
+.filterInput:focus,
+.filterSelect:focus {
+	outline: 2px solid var(--brand);
+	outline-offset: 1px;
+}
+
+.resultsSection {
+	padding: 2rem 0 3rem;
+}
+
+.helperText {
+	margin: 0 0 1rem;
+	color: var(--text-muted);
+	font-size: 0.95rem;
+}
+
+.messageCard {
+	border: 1px solid var(--border-color);
+	background-color: var(--surface-muted);
+	border-radius: 0.75rem;
+	padding: 1rem;
+	color: var(--text-muted);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+	margin-bottom: 1rem;
+}
+
+.retryButton {
+	border: 1px solid var(--border-color);
+	background-color: var(--surface);
+	color: var(--foreground);
+	border-radius: 0.6rem;
+	padding: 0.45rem 0.75rem;
+	cursor: pointer;
+}
+
+.retryButton:hover {
+	border-color: var(--brand);
+}
+
+.membersGrid {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 1rem;
+}
+
+@media (min-width: 640px) {
+	.membersGrid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (min-width: 1024px) {
+	.membersGrid {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+
+.memberCard {
+	display: flex;
+	flex-direction: column;
+	gap: 0.95rem;
+	background-color: var(--surface);
+	border: 1px solid var(--border-color);
+	border-radius: 0.85rem;
+	box-shadow: var(--shadow-soft);
+	padding: 1rem;
+	text-decoration: none;
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.memberCard:hover {
+	transform: translateY(-2px);
+	box-shadow: var(--shadow-hover);
+}
+
+.memberCard:focus-visible {
+	outline: 2px solid var(--brand);
+	outline-offset: 2px;
+}
+
+.memberTopRow {
+	display: flex;
+	align-items: center;
+	gap: 0.8rem;
+}
+
+.memberAvatar,
+.memberAvatarFallback {
+	width: 3.25rem;
+	height: 3.25rem;
+	border-radius: 999px;
+	flex-shrink: 0;
+}
+
+.memberAvatar {
+	background-size: cover;
+	background-position: center;
+	background-color: var(--surface-muted);
+	border: 1px solid var(--border-color);
+}
+
+.memberAvatarFallback {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	background-color: var(--brand);
+	color: #ffffff;
+	font-weight: 600;
+}
+
+.memberHeaderText {
+	min-width: 0;
+}
+
+.memberName {
+	margin: 0;
+	color: var(--foreground);
+	line-height: 1.2;
+	font-size: 1rem;
+}
+
+.memberRole {
+	margin: 0.25rem 0 0;
+	color: var(--brand);
+	font-size: 0.88rem;
+}
+
+.memberExpertise {
+	margin: 0;
+	color: var(--text-muted);
+	line-height: 1.5;
+	font-size: 0.92rem;
+}
+
+.teamTagWrap {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.45rem;
+}
+
+.teamTag {
+	display: inline-flex;
+	align-items: center;
+	border-radius: 999px;
+	border: 1px solid var(--border-color);
+	background-color: var(--surface-muted);
+	color: var(--brand);
+	font-size: 0.78rem;
+	font-weight: 600;
+	padding: 0.24rem 0.56rem;
+}

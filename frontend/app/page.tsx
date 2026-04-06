@@ -91,7 +91,11 @@ export default function Home() {
   const membersToRender = teams
     .filter((team) => team.lead_name)
     .slice(0, 6)
-    .map((team) => ({ name: team.lead_name, role: `Lead - ${team.title}` }));
+    .map((team) => ({
+      name: team.lead_name,
+      role: `Lead - ${team.title}`,
+      teamSlug: team.slug,
+    }));
 
   const scrollNews = (direction: 'left' | 'right') => {
     const container = newsCarouselRef.current;
@@ -264,7 +268,7 @@ export default function Home() {
             {membersToRender.map((member, idx) => {
               const initials = member.name.split(' ').map((n) => n[0]).join('');
               return (
-                <div key={idx} className={Styles.memberCard}>
+                <Link key={idx} href={`/Members?team=${encodeURIComponent(member.teamSlug)}`} className={Styles.memberCard}>
                   <div className={Styles.memberInitials}>
                     {initials}
                   </div>
@@ -272,7 +276,7 @@ export default function Home() {
                     <h4 className={Styles.memberName}>{member.name}</h4>
                     <p className={Styles.memberRole}>{member.role}</p>
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>
@@ -282,7 +286,7 @@ export default function Home() {
             </p>
           )}
           <div className={Styles.showMoreContainer}>
-            <Link href="/Teams" className={Styles.showMoreLink}>
+            <Link href="/Members" className={Styles.showMoreLink}>
               Show more members
               <span className={Styles.showMoreIcon}>→</span>
             </Link>

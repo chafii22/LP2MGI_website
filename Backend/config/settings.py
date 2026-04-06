@@ -173,7 +173,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
@@ -213,7 +213,7 @@ UNFOLD = {
     'SHOW_VIEW_ON_SITE': True,
     'DASHBOARD_CALLBACK': 'core.admin.dashboard.dashboard_callback',
     'STYLES': [
-        'core/css/admin-theme.css',
+        '/static/core/css/admin-theme.css',
     ],
     'COLORS': {
         'base': {
@@ -273,6 +273,11 @@ UNFOLD = {
                         'title': 'Homepage Hero',
                         'icon': 'home',
                         'link': '/admin/core/homehero/',
+                    },
+                    {
+                        'title': 'Overview Page',
+                        'icon': 'info',
+                        'link': '/admin/core/overviewcontent/',
                     },
                     {
                         'title': 'Homepage Metrics',

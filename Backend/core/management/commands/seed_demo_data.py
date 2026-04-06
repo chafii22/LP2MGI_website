@@ -17,6 +17,7 @@ from core.models import (
     NewsCategory,
     NewsPost,
     NewsTag,
+    OverviewContent,
     Project,
     ProjectParticipation,
     Publication,
@@ -217,6 +218,53 @@ class Command(BaseCommand):
                 "button_label": "Discover our activities",
                 "button_link": "/Overview",
                 "background_image_url": "",
+                "is_active": True,
+            },
+        )
+
+        OverviewContent.objects.update_or_create(
+            header_title="Laboratory Overview",
+            defaults={
+                "header_subtitle": "About Our Lab",
+                "header_description": (
+                    "Discover the vision, mission, and leadership behind LP2MGI, one of the premier "
+                    "research laboratories at EST Casablanca."
+                ),
+                "director_name": "Prof. Dr. Director Name",
+                "director_role": "Director of LP2MGI Laboratory",
+                "director_photo": "",
+                "director_intro": (
+                    "Welcome to LP2MGI, a dynamic research laboratory dedicated to advancing scientific "
+                    "knowledge and technological innovation."
+                ),
+                "director_quote": (
+                    "Our mission is to transform research into real-world solutions that benefit society "
+                    "and drive technological progress."
+                ),
+                "director_body": (
+                    "Through collaborative efforts with national and international partners, we foster an "
+                    "environment where creativity, rigor, and dedication converge to produce "
+                    "groundbreaking discoveries."
+                ),
+                "mission_title": "Our Mission",
+                "mission_description": (
+                    "To conduct high-quality research that advances scientific knowledge and develops "
+                    "innovative solutions."
+                ),
+                "mission_points": [
+                    "Pursuing excellence in research and education",
+                    "Fostering collaboration and innovation",
+                    "Contributing to societal development",
+                    "Enhancing student learning and growth",
+                ],
+                "vision_title": "Our Vision",
+                "vision_description": "To be recognized internationally as a leading research laboratory.",
+                "vision_points": [
+                    "Generates transformative research with global impact",
+                    "Develops next-generation leaders in science and technology",
+                    "Bridges academic research with industrial applications",
+                    "Promotes sustainable and ethical innovation",
+                ],
                 "is_active": True,
             },
         )

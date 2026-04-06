@@ -29,6 +29,10 @@ def home_hero_background_upload_to(instance, filename: str) -> str:
 	return _dated_upload_path("home/hero", instance.title, filename)
 
 
+def overview_director_photo_upload_to(instance, filename: str) -> str:
+	return _dated_upload_path("overview/director", instance.director_name or instance.header_title or "director", filename)
+
+
 def gallery_image_upload_to(instance, filename: str) -> str:
 	gallery_title = instance.gallery.title if instance.gallery_id else "gallery"
 	return _dated_upload_path("galleries/images", gallery_title, filename)
@@ -207,6 +211,33 @@ class HomeMetric(TimeStampedModel):
 
 	def __str__(self):
 		return f"{self.label}: {self.value}"
+
+
+class OverviewContent(TimeStampedModel):
+	header_subtitle = models.CharField(max_length=120, blank=True)
+	header_title = models.CharField(max_length=255)
+	header_description = models.TextField(blank=True)
+	director_name = models.CharField(max_length=180, blank=True)
+	director_role = models.CharField(max_length=180, blank=True)
+	director_photo = models.ImageField(upload_to=overview_director_photo_upload_to, blank=True)
+	director_intro = models.TextField(blank=True)
+	director_quote = models.TextField(blank=True)
+	director_body = models.TextField(blank=True)
+	mission_title = models.CharField(max_length=120, default="Our Mission")
+	mission_description = models.TextField(blank=True)
+	mission_points = models.JSONField(default=list, blank=True)
+	vision_title = models.CharField(max_length=120, default="Our Vision")
+	vision_description = models.TextField(blank=True)
+	vision_points = models.JSONField(default=list, blank=True)
+	is_active = models.BooleanField(default=True)
+
+	def save(self, *args, **kwargs):
+		if self.is_active:
+			OverviewContent.objects.exclude(pk=self.pk).filter(is_active=True).update(is_active=False)
+		super().save(*args, **kwargs)
+
+	def __str__(self):
+		return self.header_title or "Overview Content"
 
 
 class ContactMessage(TimeStampedModel):

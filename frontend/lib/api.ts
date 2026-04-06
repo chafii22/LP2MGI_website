@@ -8,6 +8,8 @@ export type TeamListItem = {
   focus: string;
   domain: string;
   overview: string;
+  order: number;
+  is_active: boolean;
   members_count: number;
 };
 
@@ -82,6 +84,28 @@ export type HomeContent = {
     is_active: boolean;
   }>;
   featured_news: NewsItem[];
+};
+
+export type OverviewContent = {
+  id: number;
+  header_subtitle: string;
+  header_title: string;
+  header_description: string;
+  director_name: string;
+  director_role: string;
+  director_photo_url: string;
+  director_intro: string;
+  director_quote: string;
+  director_body: string;
+  mission_title: string;
+  mission_description: string;
+  mission_points: string[];
+  vision_title: string;
+  vision_description: string;
+  vision_points: string[];
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 };
 
 export type ContactMessagePayload = {
@@ -268,6 +292,10 @@ function normalizeList<T>(payload: T[] | Paginated<T>): T[] {
 
 export async function getHomeContent(): Promise<HomeContent> {
   return requestJson<HomeContent>("/home");
+}
+
+export async function getOverviewContent(): Promise<OverviewContent | null> {
+  return requestJson<OverviewContent | null>("/overview");
 }
 
 export async function getTeams(): Promise<TeamListItem[]> {

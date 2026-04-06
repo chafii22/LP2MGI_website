@@ -1,20 +1,77 @@
 
-'use client';
-
-import React from 'react';
 import { Target, Eye } from 'lucide-react';
+import Image from 'next/image';
 import Styles from './Overview.module.css';
+import { getOverviewContent } from '../../lib/api';
 
-export default function Overview() {
+const fallbackContent = {
+  header_subtitle: 'About Our Lab',
+  header_title: 'Laboratory Overview',
+  header_description:
+    'Discover the vision, mission, and leadership behind LP2MGI, one of the premier research laboratories at EST Casablanca.',
+  director_name: 'Prof. Dr. Director Name',
+  director_role: 'Director of LP2MGI Laboratory',
+  director_photo_url: '',
+  director_intro:
+    'Welcome to LP2MGI, a dynamic research laboratory dedicated to advancing scientific knowledge and technological innovation. Since its establishment, our lab has been at the forefront of cutting-edge research across multiple disciplines.',
+  director_quote:
+    'Our mission is to transform research into real-world solutions that benefit society and drive technological progress.',
+  director_body:
+    'Through collaborative efforts with national and international partners, we foster an environment where creativity, rigor, and dedication converge to produce groundbreaking discoveries. Our team of talented researchers brings diverse expertise and perspectives to tackle complex challenges in modern science and engineering.',
+  mission_title: 'Our Mission',
+  mission_description:
+    'To conduct high-quality research that advances scientific knowledge and develops innovative solutions. We are committed to:',
+  mission_points: [
+    'Pursuing excellence in research and education',
+    'Fostering collaboration and innovation',
+    'Contributing to societal development',
+    'Enhancing student learning and growth',
+  ],
+  vision_title: 'Our Vision',
+  vision_description:
+    'To be recognized internationally as a leading research laboratory that:',
+  vision_points: [
+    'Generates transformative research with global impact',
+    'Develops next-generation leaders in science and technology',
+    'Bridges academic research with industrial applications',
+    'Promotes sustainable and ethical innovation',
+  ],
+};
+
+function normalizePoints(points: unknown, fallback: string[]): string[] {
+  if (!Array.isArray(points)) {
+    return fallback;
+  }
+
+  const normalized = points
+    .map((item) => (typeof item === 'string' ? item.trim() : ''))
+    .filter((item) => Boolean(item));
+
+  return normalized.length > 0 ? normalized : fallback;
+}
+
+export default async function Overview() {
+  let overview = null;
+
+  try {
+    overview = await getOverviewContent();
+  } catch {
+    overview = null;
+  }
+
+  const content = overview ?? fallbackContent;
+  const missionPoints = normalizePoints(content.mission_points, fallbackContent.mission_points);
+  const visionPoints = normalizePoints(content.vision_points, fallbackContent.vision_points);
+
   return (
     <main className={Styles.mainContainer}>
       {/* Section 1: Header Section */}
       <section className={Styles.headerSection}>
         <div className={Styles.headerContent}>
-          <p className={Styles.subtitle}>About Our Lab</p>
-          <h1 className={Styles.title}>Laboratory Overview</h1>
+          <p className={Styles.subtitle}>{content.header_subtitle || fallbackContent.header_subtitle}</p>
+          <h1 className={Styles.title}>{content.header_title || fallbackContent.header_title}</h1>
           <p className={Styles.description}>
-            Discover the vision, mission, and leadership behind LP2MGI, one of the premier research laboratories at EST Casablanca.
+            {content.header_description || fallbackContent.header_description}
           </p>
         </div>
       </section>
@@ -25,32 +82,40 @@ export default function Overview() {
           {/* Director Left Column: Image + Name + Role */}
           <div className={Styles.directorLeftColumn}>
             <div className={Styles.directorImageContainer}>
-              <div
-                className={`${Styles.directorImage} ${Styles.directorImagePlaceholder}`}
-              >
-                👨‍💼
-              </div>
+              {content.director_photo_url ? (
+                <Image
+                  className={Styles.directorImage}
+                  src={content.director_photo_url}
+                  alt={content.director_name || fallbackContent.director_name}
+                  width={800}
+                  height={1000}
+                  sizes="(max-width: 1024px) 100vw, 400px"
+                  unoptimized
+                />
+              ) : (
+                <div className={`${Styles.directorImage} ${Styles.directorImagePlaceholder}`}>No Photo</div>
+              )}
             </div>
             <h2 className={Styles.directorTitle}>
-              Prof. Dr. Director Name
+              {content.director_name || fallbackContent.director_name}
             </h2>
             <p className={Styles.directorRole}>
-              Director of LP2MGI Laboratory
+              {content.director_role || fallbackContent.director_role}
             </p>
           </div>
 
           {/* Director Right Column: Text Content */}
           <div className={Styles.directorRightColumn}>
             <p className={Styles.directorText}>
-              Welcome to LP2MGI, a dynamic research laboratory dedicated to advancing scientific knowledge and technological innovation. Since its establishment, our lab has been at the forefront of cutting-edge research across multiple disciplines.
+              {content.director_intro || fallbackContent.director_intro}
             </p>
 
             <div className={Styles.directorQuote}>
-              {"Our mission is to transform research into real-world solutions that benefit society and drive technological progress."}
+              {content.director_quote || fallbackContent.director_quote}
             </div>
 
             <p className={Styles.directorText}>
-              Through collaborative efforts with national and international partners, we foster an environment where creativity, rigor, and dedication converge to produce groundbreaking discoveries. Our team of talented researchers brings diverse expertise and perspectives to tackle complex challenges in modern science and engineering.
+              {content.director_body || fallbackContent.director_body}
             </p>
           </div>
         </div>
@@ -70,23 +135,16 @@ export default function Overview() {
               <div className={Styles.cardIcon}>
                 <Target size={28} />
               </div>
-              <h3 className={Styles.cardTitle}>Our Mission</h3>
+              <h3 className={Styles.cardTitle}>{content.mission_title || fallbackContent.mission_title}</h3>
               <p className={Styles.cardDescription}>
-                To conduct high-quality research that advances scientific knowledge and develops innovative solutions. We are committed to:
+                {content.mission_description || fallbackContent.mission_description}
               </p>
               <ul className={Styles.cardList}>
-                <li className={Styles.cardListItem}>
-                  Pursuing excellence in research and education
-                </li>
-                <li className={Styles.cardListItem}>
-                  Fostering collaboration and innovation
-                </li>
-                <li className={Styles.cardListItem}>
-                  Contributing to societal development
-                </li>
-                <li className={Styles.cardListItem}>
-                  Enhancing student learning and growth
-                </li>
+                {missionPoints.map((point) => (
+                  <li key={point} className={Styles.cardListItem}>
+                    {point}
+                  </li>
+                ))}
               </ul>
             </div>
 
@@ -95,23 +153,16 @@ export default function Overview() {
               <div className={Styles.cardIcon}>
                 <Eye size={28} />
               </div>
-              <h3 className={Styles.cardTitle}>Our Vision</h3>
+              <h3 className={Styles.cardTitle}>{content.vision_title || fallbackContent.vision_title}</h3>
               <p className={Styles.cardDescription}>
-                To be recognized internationally as a leading research laboratory that:
+                {content.vision_description || fallbackContent.vision_description}
               </p>
               <ul className={Styles.cardList}>
-                <li className={Styles.cardListItem}>
-                  Generates transformative research with global impact
-                </li>
-                <li className={Styles.cardListItem}>
-                  Develops next-generation leaders in science and technology
-                </li>
-                <li className={Styles.cardListItem}>
-                  Bridges academic research with industrial applications
-                </li>
-                <li className={Styles.cardListItem}>
-                  Promotes sustainable and ethical innovation
-                </li>
+                {visionPoints.map((point) => (
+                  <li key={point} className={Styles.cardListItem}>
+                    {point}
+                  </li>
+                ))}
               </ul>
             </div>
           </div>

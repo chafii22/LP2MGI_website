@@ -4,10 +4,30 @@ import React, { useEffect, useRef, useState } from 'react'
 import { BiEnvelope, BiPhone, BiLogoLinkedin } from 'react-icons/bi'
 import Styles from './Footer.module.css'
 
+function getAdminLinkHref(): string {
+  const explicitAdminUrl = process.env.NEXT_PUBLIC_ADMIN_URL?.trim()
+  if (explicitAdminUrl) {
+    return explicitAdminUrl
+  }
+
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL?.trim()
+  if (apiBase && /^https?:\/\//i.test(apiBase)) {
+    try {
+      const parsed = new URL(apiBase)
+      return `${parsed.origin}/admin/`
+    } catch {
+      return 'http://127.0.0.1:8000/admin/'
+    }
+  }
+
+  return 'http://127.0.0.1:8000/admin/'
+}
+
 const Footer = () => {
   const [toast, setToast] = useState('')
   const [showToast, setShowToast] = useState(false)
   const toastTimeoutRef = useRef<number | null>(null)
+  const adminLinkHref = getAdminLinkHref()
 
   useEffect(() => {
     return () => {
@@ -81,6 +101,9 @@ const Footer = () => {
         <p className={Styles.copyright}>
           © 2026 LP2MGI. All rights reserved.
         </p>
+        <a href={adminLinkHref} className={Styles.adminLink}>
+          Admin
+        </a>
       </div>
     </footer>
   )

@@ -15,6 +15,7 @@ from core.models import (
     HomeMetric,
     Member,
     NewsPost,
+    OverviewContent,
     Project,
     ProjectParticipation,
     Publication,
@@ -31,6 +32,7 @@ from .serializers import (
     HomeHeroSerializer,
     HomeMetricSerializer,
     NewsPostSerializer,
+    OverviewContentSerializer,
     ProjectDetailSerializer,
     ProjectListSerializer,
     PublicationSerializer,
@@ -110,6 +112,16 @@ class HomeContentView(APIView):
                 "featured_news": NewsPostSerializer(featured_news, many=True, context={"request": request}).data,
             }
         )
+
+
+@method_decorator(cache_page(API_CACHE_TIMEOUT), name="dispatch")
+class OverviewContentView(APIView):
+    def get(self, request):
+        overview = OverviewContent.objects.filter(is_active=True).order_by("-updated_at").first()
+        if not overview:
+            return Response(None)
+
+        return Response(OverviewContentSerializer(overview, context={"request": request}).data)
 
 
 class ContactMessageCreateView(APIView):

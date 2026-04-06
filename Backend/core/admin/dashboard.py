@@ -8,6 +8,7 @@ from core.models import (
     Gallery,
     HomeHero,
     NewsPost,
+    OverviewContent,
     Project,
     Publication,
     Team,
@@ -57,6 +58,7 @@ def dashboard_callback(request, context):
             "description": "Update hero content, metrics, pages, events, and galleries.",
             "items": [
                 {"title": "Hero", "url": _safe_reverse("admin:core_homehero_changelist")},
+                {"title": "Overview", "url": _safe_reverse("admin:core_overviewcontent_changelist")},
                 {"title": "Metrics", "url": _safe_reverse("admin:core_homemetric_changelist")},
                 {"title": "Pages", "url": _safe_reverse("admin:core_contentpage_changelist")},
                 {"title": "Events", "url": _safe_reverse("admin:core_event_changelist")},
@@ -99,6 +101,7 @@ def dashboard_callback(request, context):
     context["recent_messages"] = ContactMessage.objects.filter(is_read=False).order_by("-created_at")[:5]
     context["dashboard_counts"] = {
         "home_hero": HomeHero.objects.count(),
+        "overview_content": OverviewContent.objects.count(),
         "pages": ContentPage.objects.count(),
         "events": Event.objects.count(),
         "galleries": Gallery.objects.count(),

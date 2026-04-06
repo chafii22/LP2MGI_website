@@ -10,6 +10,7 @@ from core.models import (
     HomeMetric,
     Member,
     NewsPost,
+    OverviewContent,
     Project,
     ProjectParticipation,
     Publication,
@@ -219,6 +220,37 @@ class HomeMetricSerializer(serializers.ModelSerializer):
     class Meta:
         model = HomeMetric
         fields = ["id", "label", "value", "order", "is_active"]
+
+
+class OverviewContentSerializer(serializers.ModelSerializer):
+    director_photo_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OverviewContent
+        fields = [
+            "id",
+            "header_subtitle",
+            "header_title",
+            "header_description",
+            "director_name",
+            "director_role",
+            "director_photo_url",
+            "director_intro",
+            "director_quote",
+            "director_body",
+            "mission_title",
+            "mission_description",
+            "mission_points",
+            "vision_title",
+            "vision_description",
+            "vision_points",
+            "is_active",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_director_photo_url(self, obj):
+        return _build_media_url(self.context.get("request"), obj.director_photo)
 
 
 class ContactMessageCreateSerializer(serializers.ModelSerializer):
