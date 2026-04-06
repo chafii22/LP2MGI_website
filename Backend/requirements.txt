@@ -1,0 +1,12 @@
+asgiref==3.11.1
+Django==6.0.3
+django-cors-headers==4.9.0
+django-unfold==0.87.0
+djangorestframework==3.17.0
+pillow==12.2.0
+psycopg==3.3.3
+psycopg-binary==3.3.3
+psycopg2-binary==2.9.11
+pypdf==6.9.2
+sqlparse==0.5.5
+tzdata==2025.3
