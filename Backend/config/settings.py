@@ -12,11 +12,17 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 import os
 from pathlib import Path
+from django.core.exceptions import ImproperlyConfigured
+from django.core.management.utils import get_random_secret_key
+from dotenv import load_dotenv
 
 
 def _load_local_env_file(env_path: Path) -> None:
     if not env_path.exists():
         return
+
+    load_dotenv(env_path)
+
 
     for raw_line in env_path.read_text(encoding='utf-8').splitlines():
         line = raw_line.strip()
@@ -45,6 +51,11 @@ def _env_int(key: str, default: int) -> int:
     except (TypeError, ValueError):
         return default
 
+
+def _env_list(key: str, default: str = '') -> list[str]:
+    raw_value = os.getenv(key, default)
+    return [item.strip() for item in raw_value.split(',') if item.strip()]
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 _load_local_env_file(BASE_DIR / '.env')
@@ -53,13 +64,35 @@ _load_local_env_file(BASE_DIR / '.env')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-*dvv5-pk(iqvo^yj!3i(8k50h(v@#wdh94$by1!sr*c5%@6%=&'
-
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = _env_bool('DEBUG', default=True)
+DEBUG = _env_bool('DEBUG', default=False)
 
-ALLOWED_HOSTS = []
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY') or os.getenv('SECRET_KEY')
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = get_random_secret_key()
+    else:
+        raise ImproperlyConfigured(
+            'Missing DJANGO_SECRET_KEY (or SECRET_KEY) environment variable with DEBUG=False.'
+        )
+
+ALLOWED_HOSTS = _env_list('ALLOWED_HOSTS', 'localhost,127.0.0.1')
+CSRF_TRUSTED_ORIGINS = _env_list(
+    'CSRF_TRUSTED_ORIGINS',
+    'http://localhost:3000,http://127.0.0.1:3000,http://localhost:8000,http://127.0.0.1:8000',
+)
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = _env_bool('USE_X_FORWARDED_HOST', default=not DEBUG)
+SECURE_SSL_REDIRECT = _env_bool('SECURE_SSL_REDIRECT', default=not DEBUG)
+SESSION_COOKIE_SECURE = _env_bool('SESSION_COOKIE_SECURE', default=not DEBUG)
+CSRF_COOKIE_SECURE = _env_bool('CSRF_COOKIE_SECURE', default=not DEBUG)
+SECURE_HSTS_SECONDS = _env_int('SECURE_HSTS_SECONDS', 31536000 if not DEBUG else 0)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = _env_bool('SECURE_HSTS_INCLUDE_SUBDOMAINS', default=not DEBUG)
+SECURE_HSTS_PRELOAD = _env_bool('SECURE_HSTS_PRELOAD', default=not DEBUG)
+SECURE_CONTENT_TYPE_NOSNIFF = _env_bool('SECURE_CONTENT_TYPE_NOSNIFF', default=True)
+SECURE_REFERRER_POLICY = os.getenv('SECURE_REFERRER_POLICY', 'same-origin')
 
 
 # Application definition
@@ -174,6 +207,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
@@ -187,19 +221,22 @@ REST_FRAMEWORK = {
 
 API_CACHE_TIMEOUT = _env_int('API_CACHE_TIMEOUT', 60)
 
-CORS_ALLOWED_ORIGINS = [
-    origin.strip()
-    for origin in os.getenv(
-        'CORS_ALLOWED_ORIGINS',
-        'http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001',
-    ).split(',')
-    if origin.strip()
-]
+default_cors_origins = (
+    'http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001'
+    if DEBUG
+    else ''
+)
 
-CORS_ALLOWED_ORIGIN_REGEXES = [
-    r'^http://localhost(:\d+)?$',
-    r'^http://127\.0\.0\.1(:\d+)?$',
-]
+CORS_ALLOWED_ORIGINS = _env_list('CORS_ALLOWED_ORIGINS', default_cors_origins)
+
+CORS_ALLOWED_ORIGIN_REGEXES = (
+    [
+        r'^http://localhost(:\d+)?$',
+        r'^http://127\.0\.0\.1(:\d+)?$',
+    ]
+    if DEBUG
+    else []
+)
 
 CORS_URLS_REGEX = r'^/api/.*$'
 

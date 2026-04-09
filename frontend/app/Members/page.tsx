@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import styles from "./members.module.css";
@@ -26,7 +26,7 @@ function getInitials(fullName: string): string {
 		.join("");
 }
 
-export default function MembersPage() {
+function MembersPageContent() {
 	const searchParams = useSearchParams();
 	const teamFromQuery = searchParams.get("team")?.trim() || "";
 	const [isLoading, setIsLoading] = useState(true);
@@ -307,5 +307,13 @@ export default function MembersPage() {
 				</div>
 			</section>
 		</main>
+	);
+}
+
+export default function MembersPage() {
+	return (
+		<Suspense fallback={<p className={styles.helperText}>Loading members...</p>}>
+			<MembersPageContent />
+		</Suspense>
 	);
 }

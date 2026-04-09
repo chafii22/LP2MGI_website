@@ -221,6 +221,11 @@ function normalizeApiBase(base: string): string {
 function getApiBaseCandidates(): string[] {
   const primary = normalizeApiBase(configuredApiBase || "/api");
   const candidates = [primary];
+  const isProduction = process.env.NODE_ENV === "production";
+
+  if (isProduction) {
+    return candidates;
+  }
 
   const browserHostname =
     typeof window !== "undefined" ? window.location.hostname.trim() : "";
