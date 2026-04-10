@@ -58,6 +58,7 @@ def dashboard_callback(request, context):
             "description": "Update hero content, metrics, pages, events, and galleries.",
             "items": [
                 {"title": "Hero", "url": _safe_reverse("admin:core_homehero_changelist")},
+                {"title": "Site Settings", "url": _safe_reverse("admin:core_sitesettings_changelist")},
                 {"title": "Overview", "url": _safe_reverse("admin:core_overviewcontent_changelist")},
                 {"title": "Metrics", "url": _safe_reverse("admin:core_homemetric_changelist")},
                 {"title": "Pages", "url": _safe_reverse("admin:core_contentpage_changelist")},

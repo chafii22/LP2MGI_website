@@ -108,6 +108,12 @@ export type OverviewContent = {
   updated_at: string;
 };
 
+export type SiteSettings = {
+  navbar_title: string;
+  navbar_logo_url: string;
+  updated_at: string;
+};
+
 export type ContactMessagePayload = {
   full_name: string;
   email: string;
@@ -301,6 +307,10 @@ export async function getHomeContent(): Promise<HomeContent> {
 
 export async function getOverviewContent(): Promise<OverviewContent | null> {
   return requestJson<OverviewContent | null>("/overview");
+}
+
+export async function getSiteSettings(): Promise<SiteSettings> {
+  return requestJson<SiteSettings>("/site-settings");
 }
 
 export async function getTeams(): Promise<TeamListItem[]> {

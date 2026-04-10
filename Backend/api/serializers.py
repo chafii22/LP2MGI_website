@@ -15,6 +15,7 @@ from core.models import (
     ProjectParticipation,
     Publication,
     PublicationAuthor,
+    SiteSettings,
     Team,
 )
 
@@ -251,6 +252,21 @@ class OverviewContentSerializer(serializers.ModelSerializer):
 
     def get_director_photo_url(self, obj):
         return _build_media_url(self.context.get("request"), obj.director_photo)
+
+
+class SiteSettingsSerializer(serializers.ModelSerializer):
+    navbar_logo_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SiteSettings
+        fields = [
+            "navbar_title",
+            "navbar_logo_url",
+            "updated_at",
+        ]
+
+    def get_navbar_logo_url(self, obj):
+        return _build_media_url(self.context.get("request"), obj.navbar_logo)
 
 
 class ContactMessageCreateSerializer(serializers.ModelSerializer):

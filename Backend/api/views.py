@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.db import OperationalError, ProgrammingError
 from django.db.models import Count, Prefetch
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
@@ -20,6 +21,7 @@ from core.models import (
     ProjectParticipation,
     Publication,
     PublicationAuthor,
+    SiteSettings,
     Team,
     TeamMembership,
 )
@@ -36,6 +38,7 @@ from .serializers import (
     ProjectDetailSerializer,
     ProjectListSerializer,
     PublicationSerializer,
+    SiteSettingsSerializer,
     TeamDetailSerializer,
     TeamListSerializer,
 )
@@ -122,6 +125,22 @@ class OverviewContentView(APIView):
             return Response(None)
 
         return Response(OverviewContentSerializer(overview, context={"request": request}).data)
+
+
+class SiteSettingsView(APIView):
+    def get(self, request):
+        try:
+            site_settings, _ = SiteSettings.objects.get_or_create(pk=1, defaults={"navbar_title": "LP2MGI"})
+        except (OperationalError, ProgrammingError):
+            return Response(
+                {
+                    "navbar_title": "LP2MGI",
+                    "navbar_logo_url": "",
+                    "updated_at": None,
+                }
+            )
+
+        return Response(SiteSettingsSerializer(site_settings, context={"request": request}).data)
 
 
 class ContactMessageCreateView(APIView):

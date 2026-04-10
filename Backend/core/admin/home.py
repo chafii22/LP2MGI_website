@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 from unfold.admin import ModelAdmin
 
-from core.models import HomeHero, HomeMetric
+from core.models import HomeHero, HomeMetric, SiteSettings
 
 
 @admin.register(HomeHero)
@@ -45,3 +45,32 @@ class HomeMetricAdmin(ModelAdmin):
     search_fields = ("label", "value")
     list_filter = ("is_active",)
     ordering = ("order", "id")
+
+
+@admin.register(SiteSettings)
+class SiteSettingsAdmin(ModelAdmin):
+    list_display = ("navbar_title", "logo_preview", "updated_at")
+    readonly_fields = ("logo_preview",)
+    fields = ("navbar_title", "navbar_logo", "logo_preview")
+
+    def has_add_permission(self, request):
+        return not SiteSettings.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def logo_preview(self, obj):
+        if not obj or not obj.navbar_logo:
+            return "No image"
+
+        image_src = str(obj.navbar_logo)
+        if not image_src.startswith(("http://", "https://")):
+            image_src = obj.navbar_logo.url
+
+        return format_html(
+            '<img src="{}" alt="{}" style="max-height: 72px; border-radius: 8px;" />',
+            image_src,
+            obj.navbar_title,
+        )
+
+    logo_preview.short_description = "Logo preview"

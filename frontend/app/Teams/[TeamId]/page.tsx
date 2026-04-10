@@ -256,7 +256,15 @@ export default function TeamDetailPage() {
           <div className={styles.membersGrid}>
             {filteredMembers.map((member: TeamMember) => (
               <Link key={member.id} href={`/Teams/${teamSlug}/${member.id}`} className={styles.memberCard}>
-                <div className={styles.memberInitials}>{getInitials(member.full_name)}</div>
+                {member.photo_url ? (
+                  <div
+                    className={styles.memberAvatar}
+                    style={{ backgroundImage: `url(${member.photo_url})` }}
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <div className={styles.memberAvatarFallback}>{getInitials(member.full_name)}</div>
+                )}
                 <div className={styles.memberContent}>
                   <div className={styles.memberTop}>
                     <h3 className={styles.memberName}>{member.full_name}</h3>

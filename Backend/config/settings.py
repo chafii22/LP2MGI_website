@@ -317,6 +317,11 @@ UNFOLD = {
                         'link': '/admin/core/overviewcontent/',
                     },
                     {
+                        'title': 'Site Settings',
+                        'icon': 'settings',
+                        'link': '/admin/core/sitesettings/',
+                    },
+                    {
                         'title': 'Homepage Metrics',
                         'icon': 'monitoring',
                         'link': '/admin/core/homemetric/',

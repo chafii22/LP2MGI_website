@@ -6,12 +6,15 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Moon, Sun } from 'lucide-react'
 import Styles from './Navbar.module.css'
+import { getSiteSettings } from '@/lib/api'
 
 type ThemeMode = 'light' | 'dark'
 
 const Navbar = () => {
   const [openPath, setOpenPath] = useState<string | null>(null)
   const [themeMode, setThemeMode] = useState<ThemeMode>('light')
+  const [brandTitle, setBrandTitle] = useState('LP2MGI')
+  const [brandLogo, setBrandLogo] = useState('/Logo_ESTC.png')
   const pathname = usePathname()
   const currentPath = pathname ?? '/'
   const isOpen = openPath === currentPath
@@ -71,13 +74,45 @@ const Navbar = () => {
     localStorage.setItem('theme-mode', themeMode)
   }, [themeMode])
 
+  useEffect(() => {
+    let isMounted = true
+
+    const loadSiteSettings = async () => {
+      try {
+        const settings = await getSiteSettings()
+        if (!isMounted) {
+          return
+        }
+
+        const nextTitle = settings.navbar_title?.trim() || 'LP2MGI'
+        const nextLogo = settings.navbar_logo_url?.trim() || '/Logo_ESTC.png'
+
+        setBrandTitle(nextTitle)
+        setBrandLogo(nextLogo)
+      } catch {
+        if (!isMounted) {
+          return
+        }
+
+        setBrandTitle('LP2MGI')
+        setBrandLogo('/Logo_ESTC.png')
+      }
+    }
+
+    loadSiteSettings()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
   return (
     <nav className={Styles.navbar}>
       {/* logo */}
       <div className={Styles.brand}>
-        <Link href='/' className={Styles.logoLink} onClick={handleClose} aria-label="LP2MGI home">
-          <Image src="/Logo_ESTC.png" alt="LP2MGI logo" width={36} height={36} className={Styles.logoImage} priority />
-          <span className={Styles.brandText}>LP2MGI</span>
+        <Link href='/' className={Styles.logoLink} onClick={handleClose} aria-label={`${brandTitle} home`}>
+          <Image src={brandLogo} alt={`${brandTitle} logo`} width={36} height={36} className={Styles.logoImage} priority unoptimized />
+          <span className={Styles.brandText}>{brandTitle}</span>
         </Link>
       </div>
 

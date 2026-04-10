@@ -11,6 +11,7 @@ from .views import (
     OverviewContentView,
     ProjectViewSet,
     PublicationViewSet,
+    SiteSettingsView,
     TeamViewSet,
     test_api,
 )
@@ -27,6 +28,7 @@ router.register(r"galleries", GalleryViewSet, basename="gallery")
 urlpatterns = [
     path("test/", test_api, name="test-api"),
     path("home/", HomeContentView.as_view(), name="home-content"),
+    path("site-settings/", SiteSettingsView.as_view(), name="site-settings"),
     path("overview/", OverviewContentView.as_view(), name="overview-content"),
     path("contact/", ContactMessageCreateView.as_view(), name="contact-message-create"),
     path("", include(router.urls)),

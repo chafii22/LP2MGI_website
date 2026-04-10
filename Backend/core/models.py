@@ -38,6 +38,11 @@ def gallery_image_upload_to(instance, filename: str) -> str:
 	return _dated_upload_path("galleries/images", gallery_title, filename)
 
 
+def site_logo_upload_to(instance, filename: str) -> str:
+	brand_reference = instance.navbar_title or "site-logo"
+	return _dated_upload_path("site/logo", brand_reference, filename)
+
+
 class TimeStampedModel(models.Model):
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
@@ -238,6 +243,22 @@ class OverviewContent(TimeStampedModel):
 
 	def __str__(self):
 		return self.header_title or "Overview Content"
+
+
+class SiteSettings(TimeStampedModel):
+	navbar_title = models.CharField(max_length=120, default="LP2MGI")
+	navbar_logo = models.ImageField(upload_to=site_logo_upload_to, blank=True)
+
+	class Meta:
+		verbose_name = "Site settings"
+		verbose_name_plural = "Site settings"
+
+	def save(self, *args, **kwargs):
+		self.pk = 1
+		super().save(*args, **kwargs)
+
+	def __str__(self):
+		return "Site Settings"
 
 
 class ContactMessage(TimeStampedModel):
