@@ -80,7 +80,12 @@ if not SECRET_KEY:
 ALLOWED_HOSTS = _env_list('ALLOWED_HOSTS', 'localhost,127.0.0.1')
 CSRF_TRUSTED_ORIGINS = _env_list(
     'CSRF_TRUSTED_ORIGINS',
-    'http://localhost:3000,http://127.0.0.1:3000,http://localhost:8000,http://127.0.0.1:8000',
+    (
+        'http://localhost:3000,http://127.0.0.1:3000,'
+        'https://localhost:3000,https://127.0.0.1:3000,'
+        'http://localhost:8000,http://127.0.0.1:8000,'
+        'https://localhost:8000,https://127.0.0.1:8000'
+    ),
 )
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -222,7 +227,12 @@ REST_FRAMEWORK = {
 API_CACHE_TIMEOUT = _env_int('API_CACHE_TIMEOUT', 60)
 
 default_cors_origins = (
-    'http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001'
+    (
+        'http://localhost:3000,http://127.0.0.1:3000,'
+        'https://localhost:3000,https://127.0.0.1:3000,'
+        'http://localhost:3001,http://127.0.0.1:3001,'
+        'https://localhost:3001,https://127.0.0.1:3001'
+    )
     if DEBUG
     else ''
 )
@@ -233,6 +243,8 @@ CORS_ALLOWED_ORIGIN_REGEXES = (
     [
         r'^http://localhost(:\d+)?$',
         r'^http://127\.0\.0\.1(:\d+)?$',
+        r'^https://localhost(:\d+)?$',
+        r'^https://127\.0\.0\.1(:\d+)?$',
     ]
     if DEBUG
     else []
@@ -307,9 +319,9 @@ UNFOLD = {
                 'title': 'Website Content',
                 'items': [
                     {
-                        'title': 'Homepage Hero',
+                        'title': 'Homepage Hero Slides',
                         'icon': 'home',
-                        'link': '/admin/core/homehero/',
+                        'link': '/admin/core/homeheroslide/',
                     },
                     {
                         'title': 'Overview Page',

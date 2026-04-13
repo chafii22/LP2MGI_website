@@ -2,41 +2,68 @@ from django.contrib import admin
 from django.utils.html import format_html
 from unfold.admin import ModelAdmin
 
-from core.models import HomeHero, HomeMetric, SiteSettings
+from core.models import HomeHeroSlide, HomeMetric, SiteSettings
 
 
-@admin.register(HomeHero)
-class HomeHeroAdmin(ModelAdmin):
-    list_display = ("title", "is_active", "updated_at")
-    search_fields = ("title", "subtitle", "description")
-    list_filter = ("is_active",)
-    readonly_fields = ("background_image_preview",)
+@admin.register(HomeHeroSlide)
+class HomeHeroSlideAdmin(ModelAdmin):
+    list_display = ("big_title", "media_type", "is_active", "order", "updated_at")
+    search_fields = ("big_title", "small_label", "short_description")
+    list_filter = ("media_type", "is_active")
+    ordering = ("order", "id")
+    readonly_fields = ("illustration_preview", "video_preview")
     fields = (
-        "subtitle",
-        "title",
-        "description",
-        "button_label",
-        "button_link",
-        "background_image_url",
-        "background_image_preview",
+        "small_label",
+        "big_title",
+        "short_description",
+        "media_type",
+        "illustration",
+        "illustration_preview",
+        "video_file",
+        "video_preview",
+        "use_abstract_background",
+        "primary_button_label",
+        "primary_button_target_type",
+        "primary_button_url",
+        "primary_button_file",
+        "secondary_button_label",
+        "secondary_button_target_type",
+        "secondary_button_url",
+        "secondary_button_file",
+        "order",
         "is_active",
     )
 
-    def background_image_preview(self, obj):
-        if not obj or not obj.background_image_url:
+    def illustration_preview(self, obj):
+        if not obj or not obj.illustration:
             return "No image"
 
-        image_src = str(obj.background_image_url)
+        image_src = str(obj.illustration)
         if not image_src.startswith(("http://", "https://")):
-            image_src = obj.background_image_url.url
+            image_src = obj.illustration.url
 
         return format_html(
             '<img src="{}" alt="{}" style="max-height: 120px; border-radius: 8px;" />',
             image_src,
-            obj.title,
+            obj.big_title,
         )
 
-    background_image_preview.short_description = "Background preview"
+    illustration_preview.short_description = "Illustration preview"
+
+    def video_preview(self, obj):
+        if not obj or not obj.video_file:
+            return "No video"
+
+        video_src = str(obj.video_file)
+        if not video_src.startswith(("http://", "https://")):
+            video_src = obj.video_file.url
+
+        return format_html(
+            '<video src="{}" controls style="max-height: 120px; border-radius: 8px;"></video>',
+            video_src,
+        )
+
+    video_preview.short_description = "Video preview"
 
 
 @admin.register(HomeMetric)

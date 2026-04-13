@@ -12,7 +12,7 @@ from core.models import (
     ContentPage,
     Event,
     Gallery,
-    HomeHero,
+    HomeHeroSlide,
     HomeMetric,
     Member,
     NewsPost,
@@ -31,7 +31,7 @@ from .serializers import (
     ContactMessageCreateSerializer,
     EventSerializer,
     GallerySerializer,
-    HomeHeroSerializer,
+    HomeHeroSlideSerializer,
     HomeMetricSerializer,
     NewsPostSerializer,
     OverviewContentSerializer,
@@ -99,7 +99,9 @@ class NewsPostViewSet(viewsets.ReadOnlyModelViewSet):
 @method_decorator(cache_page(API_CACHE_TIMEOUT), name="dispatch")
 class HomeContentView(APIView):
     def get(self, request):
-        hero = HomeHero.objects.filter(is_active=True).order_by("-updated_at").first()
+        hero_slides_queryset = HomeHeroSlide.objects.filter(is_active=True).order_by("order", "id")
+        hero_slides = HomeHeroSlideSerializer(hero_slides_queryset, many=True, context={"request": request}).data
+
         metrics = HomeMetric.objects.filter(is_active=True).order_by("order", "id")
         featured_news = (
             NewsPost.objects.filter(is_published=True, is_featured=True)
@@ -110,7 +112,7 @@ class HomeContentView(APIView):
 
         return Response(
             {
-                "hero": HomeHeroSerializer(hero, context={"request": request}).data if hero else None,
+                "hero_slides": hero_slides,
                 "metrics": HomeMetricSerializer(metrics, many=True, context={"request": request}).data,
                 "featured_news": NewsPostSerializer(featured_news, many=True, context={"request": request}).data,
             }

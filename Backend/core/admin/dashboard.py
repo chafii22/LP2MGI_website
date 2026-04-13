@@ -6,7 +6,7 @@ from core.models import (
     ContentPage,
     Event,
     Gallery,
-    HomeHero,
+    HomeHeroSlide,
     NewsPost,
     OverviewContent,
     Project,
@@ -57,7 +57,7 @@ def dashboard_callback(request, context):
             "title": "Homepage & Content",
             "description": "Update hero content, metrics, pages, events, and galleries.",
             "items": [
-                {"title": "Hero", "url": _safe_reverse("admin:core_homehero_changelist")},
+                {"title": "Hero Slides", "url": _safe_reverse("admin:core_homeheroslide_changelist")},
                 {"title": "Site Settings", "url": _safe_reverse("admin:core_sitesettings_changelist")},
                 {"title": "Overview", "url": _safe_reverse("admin:core_overviewcontent_changelist")},
                 {"title": "Metrics", "url": _safe_reverse("admin:core_homemetric_changelist")},
@@ -101,7 +101,7 @@ def dashboard_callback(request, context):
 
     context["recent_messages"] = ContactMessage.objects.filter(is_read=False).order_by("-created_at")[:5]
     context["dashboard_counts"] = {
-        "home_hero": HomeHero.objects.count(),
+        "home_hero_slides": HomeHeroSlide.objects.count(),
         "overview_content": OverviewContent.objects.count(),
         "pages": ContentPage.objects.count(),
         "events": Event.objects.count(),

@@ -11,7 +11,7 @@ from core.models import (
     Event,
     Gallery,
     GalleryImage,
-    HomeHero,
+    HomeHeroSlide,
     HomeMetric,
     Member,
     NewsCategory,
@@ -210,14 +210,22 @@ class Command(BaseCommand):
                 },
             )
 
-        HomeHero.objects.update_or_create(
-            title="Research and Innovation at LP2MGI",
+        HomeHeroSlide.objects.update_or_create(
+            big_title="Research and Innovation at LP2MGI",
+            order=1,
             defaults={
-                "subtitle": "LP2MGI Laboratory",
-                "description": "Institutional website dedicated to showcasing the laboratory's scientific and technological activities.",
-                "button_label": "Discover our activities",
-                "button_link": "/Overview",
-                "background_image_url": "",
+                "small_label": "LP2MGI Laboratory",
+                "short_description": (
+                    "Institutional website dedicated to showcasing the laboratory's scientific and technological activities."
+                ),
+                "media_type": "none",
+                "use_abstract_background": True,
+                "primary_button_label": "Discover our activities",
+                "primary_button_target_type": "url",
+                "primary_button_url": "/Overview",
+                "secondary_button_label": "Contact Us",
+                "secondary_button_target_type": "url",
+                "secondary_button_url": "/Contact",
                 "is_active": True,
             },
         )

@@ -6,7 +6,7 @@ from core.models import (
     Event,
     Gallery,
     GalleryImage,
-    HomeHero,
+    HomeHeroSlide,
     HomeMetric,
     Member,
     NewsPost,
@@ -197,24 +197,60 @@ class NewsPostSerializer(serializers.ModelSerializer):
         return _build_media_url(self.context.get("request"), obj.cover_image_url)
 
 
-class HomeHeroSerializer(serializers.ModelSerializer):
-    background_image_url = serializers.SerializerMethodField()
+class HomeHeroSlideSerializer(serializers.ModelSerializer):
+    illustration_url = serializers.SerializerMethodField()
+    video_file_url = serializers.SerializerMethodField()
+    primary_button_file_url = serializers.SerializerMethodField()
+    secondary_button_file_url = serializers.SerializerMethodField()
+    primary_button_href = serializers.SerializerMethodField()
+    secondary_button_href = serializers.SerializerMethodField()
 
     class Meta:
-        model = HomeHero
+        model = HomeHeroSlide
         fields = [
             "id",
-            "subtitle",
-            "title",
-            "description",
-            "button_label",
-            "button_link",
-            "background_image_url",
+            "small_label",
+            "big_title",
+            "short_description",
+            "media_type",
+            "illustration_url",
+            "video_file_url",
+            "use_abstract_background",
+            "primary_button_label",
+            "primary_button_target_type",
+            "primary_button_url",
+            "primary_button_file_url",
+            "primary_button_href",
+            "secondary_button_label",
+            "secondary_button_target_type",
+            "secondary_button_url",
+            "secondary_button_file_url",
+            "secondary_button_href",
+            "order",
             "is_active",
         ]
 
-    def get_background_image_url(self, obj):
-        return _build_media_url(self.context.get("request"), obj.background_image_url)
+    def get_illustration_url(self, obj):
+        return _build_media_url(self.context.get("request"), obj.illustration)
+
+    def get_video_file_url(self, obj):
+        return _build_media_url(self.context.get("request"), obj.video_file)
+
+    def get_primary_button_file_url(self, obj):
+        return _build_media_url(self.context.get("request"), obj.primary_button_file)
+
+    def get_secondary_button_file_url(self, obj):
+        return _build_media_url(self.context.get("request"), obj.secondary_button_file)
+
+    def get_primary_button_href(self, obj):
+        if obj.primary_button_target_type == "file":
+            return self.get_primary_button_file_url(obj)
+        return obj.primary_button_url
+
+    def get_secondary_button_href(self, obj):
+        if obj.secondary_button_target_type == "file":
+            return self.get_secondary_button_file_url(obj)
+        return obj.secondary_button_url
 
 
 class HomeMetricSerializer(serializers.ModelSerializer):

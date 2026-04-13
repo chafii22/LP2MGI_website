@@ -2,6 +2,7 @@ import os
 from uuid import uuid4
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from django.utils.text import slugify
@@ -26,7 +27,23 @@ def news_cover_upload_to(instance, filename: str) -> str:
 
 
 def home_hero_background_upload_to(instance, filename: str) -> str:
-	return _dated_upload_path("home/hero", instance.title, filename)
+	# Kept for historical migration compatibility.
+	return _dated_upload_path("home/hero", getattr(instance, "title", "hero"), filename)
+
+
+def home_hero_slide_illustration_upload_to(instance, filename: str) -> str:
+	title_ref = instance.big_title if instance and instance.big_title else "slide-illustration"
+	return _dated_upload_path("home/hero/slides/illustrations", title_ref, filename)
+
+
+def home_hero_slide_video_upload_to(instance, filename: str) -> str:
+	title_ref = instance.big_title if instance and instance.big_title else "slide-video"
+	return _dated_upload_path("home/hero/slides/videos", title_ref, filename)
+
+
+def home_hero_slide_button_file_upload_to(instance, filename: str) -> str:
+	title_ref = instance.big_title if instance and instance.big_title else "slide-button-file"
+	return _dated_upload_path("home/hero/slides/buttons", title_ref, filename)
 
 
 def overview_director_photo_upload_to(instance, filename: str) -> str:
@@ -187,22 +204,82 @@ class NewsPost(TimeStampedModel):
 		return self.title
 
 
-class HomeHero(TimeStampedModel):
-	subtitle = models.CharField(max_length=120, blank=True)
-	title = models.CharField(max_length=255)
-	description = models.TextField(blank=True)
-	button_label = models.CharField(max_length=80, blank=True)
-	button_link = models.CharField(max_length=255, blank=True)
-	background_image_url = models.ImageField(upload_to=home_hero_background_upload_to, blank=True)
+class HeroSlideMediaType(models.TextChoices):
+	ILLUSTRATION = "illustration", "Illustration"
+	VIDEO = "video", "Video"
+	NONE = "none", "None"
+
+
+class HeroButtonTargetType(models.TextChoices):
+	URL = "url", "URL"
+	FILE = "file", "File"
+
+
+class HomeHeroSlide(TimeStampedModel):
+	small_label = models.CharField(max_length=120, blank=True)
+	big_title = models.CharField(max_length=255)
+	short_description = models.TextField(blank=True)
+	media_type = models.CharField(max_length=20, choices=HeroSlideMediaType.choices, default=HeroSlideMediaType.NONE)
+	illustration = models.ImageField(upload_to=home_hero_slide_illustration_upload_to, blank=True)
+	video_file = models.FileField(upload_to=home_hero_slide_video_upload_to, blank=True)
+	use_abstract_background = models.BooleanField(default=False)
+	primary_button_label = models.CharField(max_length=80, blank=True)
+	primary_button_target_type = models.CharField(
+		max_length=10,
+		choices=HeroButtonTargetType.choices,
+		default=HeroButtonTargetType.URL,
+	)
+	primary_button_url = models.CharField(max_length=255, blank=True)
+	primary_button_file = models.FileField(upload_to=home_hero_slide_button_file_upload_to, blank=True)
+	secondary_button_label = models.CharField(max_length=80, blank=True)
+	secondary_button_target_type = models.CharField(
+		max_length=10,
+		choices=HeroButtonTargetType.choices,
+		default=HeroButtonTargetType.URL,
+	)
+	secondary_button_url = models.CharField(max_length=255, blank=True)
+	secondary_button_file = models.FileField(upload_to=home_hero_slide_button_file_upload_to, blank=True)
+	order = models.PositiveIntegerField(default=0)
 	is_active = models.BooleanField(default=True)
 
-	def save(self, *args, **kwargs):
-		if self.is_active:
-			HomeHero.objects.exclude(pk=self.pk).filter(is_active=True).update(is_active=False)
-		super().save(*args, **kwargs)
+	class Meta:
+		ordering = ["order", "id"]
+
+	def clean(self):
+		errors = {}
+
+		if self.media_type == HeroSlideMediaType.ILLUSTRATION and not self.illustration and not self.use_abstract_background:
+			errors["illustration"] = "Upload an illustration or enable abstract background."
+
+		if self.media_type == HeroSlideMediaType.VIDEO and not self.video_file:
+			errors["video_file"] = "Upload a video file when media type is set to video."
+
+		if self.media_type == HeroSlideMediaType.NONE and not self.use_abstract_background:
+			errors["use_abstract_background"] = "Enable abstract background when no media is provided."
+
+		if self.primary_button_label and self.primary_button_target_type == HeroButtonTargetType.URL and not self.primary_button_url:
+			errors["primary_button_url"] = "Add a URL for the primary button."
+
+		if self.primary_button_label and self.primary_button_target_type == HeroButtonTargetType.FILE and not self.primary_button_file:
+			errors["primary_button_file"] = "Upload a file for the primary button."
+
+		if (self.primary_button_url or self.primary_button_file) and not self.primary_button_label:
+			errors["primary_button_label"] = "Provide a label for the primary button."
+
+		if self.secondary_button_label and self.secondary_button_target_type == HeroButtonTargetType.URL and not self.secondary_button_url:
+			errors["secondary_button_url"] = "Add a URL for the secondary button."
+
+		if self.secondary_button_label and self.secondary_button_target_type == HeroButtonTargetType.FILE and not self.secondary_button_file:
+			errors["secondary_button_file"] = "Upload a file for the secondary button."
+
+		if (self.secondary_button_url or self.secondary_button_file) and not self.secondary_button_label:
+			errors["secondary_button_label"] = "Provide a label for the secondary button."
+
+		if errors:
+			raise ValidationError(errors)
 
 	def __str__(self):
-		return self.title
+		return self.big_title
 
 
 class HomeMetric(TimeStampedModel):
