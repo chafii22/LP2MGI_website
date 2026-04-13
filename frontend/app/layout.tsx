@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Navbar from "./Components/Navbar";
 import Footer from "./Components/Footer";
+import Providers from "./providers";
 import { Inter } from "next/font/google";
 import { defaultKeywords, siteDescription, siteName, siteTitle, siteUrl } from "@/lib/seo";
 
@@ -78,13 +79,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" data-theme="light" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${inter.className} antialiased leading-relaxed`}
       >
-        <Navbar></Navbar>
-        {children}
-        <Footer></Footer>
+        <Providers>
+          <Navbar></Navbar>
+          {children}
+          <Footer></Footer>
+        </Providers>
       </body>
     </html>
   );

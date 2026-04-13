@@ -66,16 +66,28 @@ export type NewsItem = {
 };
 
 export type HomeContent = {
-  hero: {
+  hero_slides: Array<{
     id: number;
-    subtitle: string;
-    title: string;
-    description: string;
-    button_label: string;
-    button_link: string;
-    background_image_url: string;
+    small_label: string;
+    big_title: string;
+    short_description: string;
+    media_type: "illustration" | "video" | "none";
+    illustration_url: string;
+    video_file_url: string;
+    use_abstract_background: boolean;
+    primary_button_label: string;
+    primary_button_target_type: "url" | "file";
+    primary_button_url: string;
+    primary_button_file_url: string;
+    primary_button_href: string;
+    secondary_button_label: string;
+    secondary_button_target_type: "url" | "file";
+    secondary_button_url: string;
+    secondary_button_file_url: string;
+    secondary_button_href: string;
+    order: number;
     is_active: boolean;
-  } | null;
+  }>;
   metrics: Array<{
     id: number;
     label: string;

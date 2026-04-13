@@ -1,9 +1,10 @@
 "use client"
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useSyncExternalStore } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useTheme } from 'next-themes'
 import { Moon, Sun } from 'lucide-react'
 import Styles from './Navbar.module.css'
 import { getSiteSettings } from '@/lib/api'
@@ -12,9 +13,14 @@ type ThemeMode = 'light' | 'dark'
 
 const Navbar = () => {
   const [openPath, setOpenPath] = useState<string | null>(null)
-  const [themeMode, setThemeMode] = useState<ThemeMode>('light')
   const [brandTitle, setBrandTitle] = useState('LP2MGI')
   const [brandLogo, setBrandLogo] = useState('/Logo_ESTC.png')
+  const { resolvedTheme, setTheme } = useTheme()
+  const isMounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  )
   const pathname = usePathname()
   const currentPath = pathname ?? '/'
   const isOpen = openPath === currentPath
@@ -35,20 +41,25 @@ const Navbar = () => {
 
   const handleClose = () => setOpenPath(null)
 
-  const applyTheme = (mode: ThemeMode) => {
-    document.documentElement.setAttribute('data-theme', mode)
-  }
+  const themeMode: ThemeMode = isMounted && resolvedTheme === 'dark' ? 'dark' : 'light'
 
   const cycleThemeMode = () => {
+    if (!isMounted) {
+      return
+    }
+
     const nextMode: ThemeMode = themeMode === 'light' ? 'dark' : 'light'
 
-    setThemeMode(nextMode)
+    setTheme(nextMode)
   }
 
-  const currentThemeLabel = themeMode === 'light' ? 'Light' : 'Dark'
+  const currentThemeLabel = isMounted
+    ? (themeMode === 'light' ? 'Light' : 'Dark')
+    : 'Theme'
 
-  const themeIcon =
-    themeMode === 'light' ? <Sun size={18} aria-hidden="true" /> : <Moon size={18} aria-hidden="true" />
+  const themeIcon = isMounted
+    ? (themeMode === 'light' ? <Sun size={18} aria-hidden="true" /> : <Moon size={18} aria-hidden="true" />)
+    : <Sun size={18} aria-hidden="true" />
 
   const isActivePath = (href: string) => {
     if (href === '/') {
@@ -68,11 +79,6 @@ const Navbar = () => {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
-
-  useEffect(() => {
-    applyTheme(themeMode)
-    localStorage.setItem('theme-mode', themeMode)
-  }, [themeMode])
 
   useEffect(() => {
     let isMounted = true
@@ -121,8 +127,9 @@ const Navbar = () => {
           type="button"
           className={Styles.themeToggle}
           onClick={cycleThemeMode}
-          aria-label={`Theme mode: ${currentThemeLabel}. Click to switch mode.`}
-          title={`Theme mode: ${currentThemeLabel}`}
+          aria-label={isMounted ? `Theme mode: ${currentThemeLabel}. Click to switch mode.` : 'Theme mode toggle'}
+          title={isMounted ? `Theme mode: ${currentThemeLabel}` : 'Theme mode'}
+          disabled={!isMounted}
         >
           {themeIcon}
           <span className={Styles.srOnly}>Switch theme mode</span>

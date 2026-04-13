@@ -4,17 +4,33 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Styles from './Home.module.css';
-import { getHomeContent, getTeams, type NewsItem, type TeamListItem } from '@/lib/api';
+import { getHomeContent, getTeams, type HomeContent, type NewsItem, type TeamListItem } from '@/lib/api';
+
+type HeroSlide = HomeContent['hero_slides'][number];
+
+function resolveSlideButtonHref(
+  targetType: HeroSlide['primary_button_target_type'] | HeroSlide['secondary_button_target_type'],
+  urlValue: string,
+  fileValue: string,
+) {
+  return targetType === 'file' ? fileValue : urlValue;
+}
+
+function isInternalAppLink(href: string) {
+  return href.startsWith('/') && !href.startsWith('//');
+}
 
 export default function Home() {
   const newsCarouselRef = useRef<HTMLDivElement | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [homeFailed, setHomeFailed] = useState(false);
   const [teamsFailed, setTeamsFailed] = useState(false);
-  const [hero, setHero] = useState<{ subtitle: string; title: string; description: string; button_label: string; button_link: string } | null>(null);
+  const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
+  const [activeHeroIndex, setActiveHeroIndex] = useState(0);
   const [metrics, setMetrics] = useState<Array<{ label: string; value: string }>>([]);
   const [featuredNews, setFeaturedNews] = useState<NewsItem[]>([]);
   const [teams, setTeams] = useState<TeamListItem[]>([]);
+  const HERO_AUTOPLAY_MS = 6000;
 
   useEffect(() => {
     let isMounted = true;
@@ -32,13 +48,13 @@ export default function Home() {
         }
 
         if (homeResult.status === 'fulfilled') {
-          setHero(homeResult.value.hero);
+          setHeroSlides(homeResult.value.hero_slides || []);
           setMetrics(homeResult.value.metrics.map((metric) => ({ label: metric.label, value: metric.value })));
           setFeaturedNews(homeResult.value.featured_news);
           setHomeFailed(false);
         } else {
           setHomeFailed(true);
-          setHero(null);
+          setHeroSlides([]);
           setMetrics([]);
           setFeaturedNews([]);
         }
@@ -86,6 +102,58 @@ export default function Home() {
     [featuredNews],
   );
 
+  const heroSlidesToRender = useMemo<HeroSlide[]>(() => {
+    if (heroSlides.length > 0) {
+      return heroSlides;
+    }
+
+    return [
+      {
+        id: 0,
+        small_label: 'LP2MGI Laboratory',
+        big_title: 'Research and Innovation at LP2MGI',
+        short_description: 'Discover our latest projects, publications, and collaborations.',
+        media_type: 'none',
+        illustration_url: '',
+        video_file_url: '',
+        use_abstract_background: true,
+        primary_button_label: 'Explore',
+        primary_button_target_type: 'url',
+        primary_button_url: '/Overview',
+        primary_button_file_url: '',
+        primary_button_href: '/Overview',
+        secondary_button_label: '',
+        secondary_button_target_type: 'url',
+        secondary_button_url: '',
+        secondary_button_file_url: '',
+        secondary_button_href: '',
+        order: 0,
+        is_active: true,
+      },
+    ];
+  }, [heroSlides]);
+
+  useEffect(() => {
+    setActiveHeroIndex((current) => {
+      const maxIndex = Math.max(heroSlidesToRender.length - 1, 0);
+      return Math.min(current, maxIndex);
+    });
+  }, [heroSlidesToRender.length]);
+
+  useEffect(() => {
+    if (heroSlidesToRender.length <= 1) {
+      return;
+    }
+
+    const autoplayTimer = setInterval(() => {
+      setActiveHeroIndex((current) => (current + 1) % heroSlidesToRender.length);
+    }, HERO_AUTOPLAY_MS);
+
+    return () => {
+      clearInterval(autoplayTimer);
+    };
+  }, [heroSlidesToRender.length, HERO_AUTOPLAY_MS]);
+
   const teamsToRender = teams.slice(0, 3);
 
   const membersToRender = teams
@@ -111,25 +179,118 @@ export default function Home() {
     });
   };
 
+  const goToHeroSlide = (index: number) => {
+    setActiveHeroIndex(index);
+  };
+
   return (
     <main className={Styles.mainContainer}>
       {/* 1. Hero Section */}
-      <section className={Styles.heroSection}>
-        <div className={Styles.heroOverlay}></div>
-        <div className={Styles.heroContent}>
-          <p className={Styles.heroSubtitle}>
-            {hero?.subtitle || 'LP2MGI Laboratory'}
-          </p>
-          <h1 className={Styles.heroTitle}>
-            {hero?.title || 'Research and Innovation at LP2MGI'}
-          </h1>
-          <p className={Styles.heroDescription}>
-            {hero?.description || 'Live content is loaded from the backend API.'}
-          </p>
-          <Link href={hero?.button_link || '/Overview'} className={Styles.heroButton}>
-            {hero?.button_label || 'Explore'}
-          </Link>
+      <section className={Styles.heroSection} style={{ '--hero-duration': `${HERO_AUTOPLAY_MS}ms` } as React.CSSProperties}>
+        <div className={Styles.heroViewport}>
+          <div className={Styles.heroTrack} style={{ '--hero-index': activeHeroIndex } as React.CSSProperties}>
+            {heroSlidesToRender.map((slide, index) => {
+              const resolvedPrimaryHref =
+                slide.primary_button_href ||
+                resolveSlideButtonHref(slide.primary_button_target_type, slide.primary_button_url, slide.primary_button_file_url);
+              const resolvedSecondaryHref =
+                slide.secondary_button_href ||
+                resolveSlideButtonHref(slide.secondary_button_target_type, slide.secondary_button_url, slide.secondary_button_file_url);
+              const primaryIsDownload = slide.primary_button_target_type === 'file';
+              const secondaryIsDownload = slide.secondary_button_target_type === 'file';
+              const TitleTag = index === 0 ? 'h1' : 'h2';
+              const smallLabel = slide.small_label?.trim() || '';
+
+              return (
+                <article key={`${slide.id}-${slide.order}-${index}`} className={Styles.heroSlide}>
+                  <div className={Styles.heroMediaLayer}>
+                    {slide.media_type === 'video' && slide.video_file_url ? (
+                      <video
+                        className={Styles.heroVideo}
+                        src={slide.video_file_url}
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                        preload="metadata"
+                      />
+                    ) : slide.media_type === 'illustration' && slide.illustration_url ? (
+                      <div
+                        className={Styles.heroIllustration}
+                        style={{
+                          backgroundImage: `url(${slide.illustration_url})`,
+                        }}
+                      />
+                    ) : (
+                      <div className={Styles.heroAbstractBackground} aria-hidden="true" />
+                    )}
+                    <div className={Styles.heroOverlay} aria-hidden="true" />
+                  </div>
+
+                  <div className={Styles.heroContent}>
+                    {smallLabel ? <p className={Styles.heroSubtitle}>{smallLabel}</p> : null}
+                    <TitleTag className={Styles.heroTitle}>{slide.big_title || 'Research and Innovation at LP2MGI'}</TitleTag>
+                    <p className={Styles.heroDescription}>
+                      {slide.short_description || 'Live content is loaded from the backend API.'}
+                    </p>
+                    <div className={Styles.heroButtons}>
+                      {slide.primary_button_label && resolvedPrimaryHref && (
+                        isInternalAppLink(resolvedPrimaryHref) && !primaryIsDownload ? (
+                          <Link href={resolvedPrimaryHref} className={Styles.heroButtonPrimary}>
+                            {slide.primary_button_label}
+                          </Link>
+                        ) : (
+                          <a
+                            href={resolvedPrimaryHref}
+                            className={Styles.heroButtonPrimary}
+                            target={primaryIsDownload ? undefined : '_blank'}
+                            rel={primaryIsDownload ? undefined : 'noreferrer'}
+                            download={primaryIsDownload || undefined}
+                          >
+                            {slide.primary_button_label}
+                          </a>
+                        )
+                      )}
+                      {slide.secondary_button_label && resolvedSecondaryHref && (
+                        isInternalAppLink(resolvedSecondaryHref) && !secondaryIsDownload ? (
+                          <Link href={resolvedSecondaryHref} className={Styles.heroButtonSecondary}>
+                            {slide.secondary_button_label}
+                          </Link>
+                        ) : (
+                          <a
+                            href={resolvedSecondaryHref}
+                            className={Styles.heroButtonSecondary}
+                            target={secondaryIsDownload ? undefined : '_blank'}
+                            rel={secondaryIsDownload ? undefined : 'noreferrer'}
+                            download={secondaryIsDownload || undefined}
+                          >
+                            {slide.secondary_button_label}
+                          </a>
+                        )
+                      )}
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
         </div>
+
+        {heroSlidesToRender.length > 1 && (
+          <div className={Styles.heroDots}>
+            {heroSlidesToRender.map((slide, index) => (
+              <button
+                key={`${slide.id}-${index}`}
+                type="button"
+                className={`${Styles.heroDot} ${index === activeHeroIndex ? Styles.heroDotActive : ''}`}
+                onClick={() => goToHeroSlide(index)}
+                aria-label={`Go to hero slide ${index + 1}`}
+              >
+                <span className={Styles.heroDotFill} aria-hidden="true" />
+              </button>
+            ))}
+          </div>
+        )}
       </section>
 
       {homeFailed && teamsFailed && !isLoading && (
