@@ -96,8 +96,11 @@
 }
 
 .heroIllustration {
-  background-size: cover;
-  background-position: center;
+  overflow: hidden;
+}
+
+.heroIllustrationImage {
+  object-fit: cover;
   transform: scale(1.03);
 }
 
@@ -236,6 +239,14 @@
   justify-content: center;
   align-items: center;
   gap: 0.62rem;
+  min-height: 10px;
+}
+
+.heroDotsSpacer {
+  display: block;
+  width: 42px;
+  height: 8px;
+  opacity: 0;
 }
 
 .heroDot {
@@ -510,6 +521,8 @@
 }
 
 .newsImagePlaceholder {
+  position: relative;
+  overflow: hidden;
   height: 12rem;
   background-color: var(--surface-muted);
   border-radius: 0.5rem;
@@ -519,6 +532,10 @@
   justify-content: center;
   color: var(--text-muted);
   font-size: 0.875rem;
+}
+
+.newsImage {
+  object-fit: cover;
 }
 
 .newsCardTitle {

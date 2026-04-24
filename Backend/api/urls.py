@@ -7,6 +7,8 @@ from .views import (
     EventViewSet,
     GalleryViewSet,
     HomeContentView,
+    MemberProfileAccessView,
+    MemberProfileSubmissionCreateView,
     NewsPostViewSet,
     OverviewContentView,
     ProjectViewSet,
@@ -31,5 +33,11 @@ urlpatterns = [
     path("site-settings/", SiteSettingsView.as_view(), name="site-settings"),
     path("overview/", OverviewContentView.as_view(), name="overview-content"),
     path("contact/", ContactMessageCreateView.as_view(), name="contact-message-create"),
+    path("member-profile-access/<str:token>/", MemberProfileAccessView.as_view(), name="member-profile-access"),
+    path(
+        "member-profile-access/<str:token>/submit/",
+        MemberProfileSubmissionCreateView.as_view(),
+        name="member-profile-access-submit",
+    ),
     path("", include(router.urls)),
 ]

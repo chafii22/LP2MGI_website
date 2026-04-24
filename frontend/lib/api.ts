@@ -133,6 +133,56 @@ export type ContactMessagePayload = {
   message: string;
 };
 
+export type MemberEditStatus = "pending_invitation" | "pending_approval" | "changes_requested" | "active";
+
+export type MemberEditableProfile = {
+  id: number;
+  full_name: string;
+  role: string;
+  expertise: string;
+  email: string;
+  photo_url: string;
+  biography: string;
+  highlight_quote: string;
+  research_interests: string[];
+  milestones: Array<Record<string, unknown>>;
+  researchgate_url: string;
+  google_scholar_url: string;
+  orcid_url: string;
+};
+
+export type MemberProfileSubmissionSummary = {
+  id: number;
+  status: "pending_approval" | "changes_requested" | "approved";
+  submitted_by: string;
+  submitted_at: string;
+  reviewed_by: string;
+  reviewed_at: string | null;
+  approved_at: string | null;
+  applied_at: string | null;
+  admin_comment: string;
+};
+
+export type MemberProfileAuditEntry = {
+  id: number;
+  event_type: "link_regenerated" | "submitted" | "approved" | "changes_requested";
+  actor: string;
+  created_at: string;
+  details: Record<string, unknown>;
+};
+
+export type MemberEditAccessPayload = {
+  member: MemberEditableProfile;
+  status: MemberEditStatus;
+  latest_submission: MemberProfileSubmissionSummary | null;
+  audit_log: MemberProfileAuditEntry[];
+};
+
+export type MemberProfileSubmissionPayload = Partial<Omit<MemberEditableProfile, "id" | "photo_url">> & {
+  photo_file?: File | null;
+  remove_photo?: boolean;
+};
+
 export type PublicationItem = {
   id: number;
   slug: string;
@@ -216,6 +266,7 @@ type Paginated<T> = {
 };
 
 const configuredApiBase = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
+const configuredBackendOrigin = process.env.NEXT_BACKEND_ORIGIN?.trim();
 
 function normalizeApiBase(base: string): string {
   const trimmed = base.trim().replace(/\/$/, "");
@@ -238,10 +289,36 @@ function normalizeApiBase(base: string): string {
 
 function getApiBaseCandidates(): string[] {
   const primary = normalizeApiBase(configuredApiBase || "/api");
-  const candidates = [primary];
+  const candidates: string[] = [];
   const isProduction = process.env.NODE_ENV === "production";
+  const isServer = typeof window === "undefined";
+
+  const normalizedBackendOrigin = configuredBackendOrigin?.replace(/\/$/, "") || "";
+  const backendApiBase = normalizedBackendOrigin ? `${normalizedBackendOrigin}/api` : "";
+
+  if (!(isServer && primary.startsWith("/"))) {
+    candidates.push(primary);
+  }
+
+  if (isServer) {
+    if (backendApiBase && !candidates.includes(backendApiBase)) {
+      candidates.push(backendApiBase);
+    }
+
+    const serverFallbacks = ["http://127.0.0.1:8000/api", "http://localhost:8000/api"];
+    for (const fallback of serverFallbacks) {
+      if (!candidates.includes(fallback)) {
+        candidates.push(fallback);
+      }
+    }
+
+    return candidates;
+  }
 
   if (isProduction) {
+    if (!candidates.includes(primary)) {
+      candidates.push(primary);
+    }
     return candidates;
   }
 
@@ -273,8 +350,9 @@ function ensureTrailingSlash(path: string): string {
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
   const hasBody = init?.body !== undefined && init?.body !== null;
+  const isFormData = typeof FormData !== "undefined" && init?.body instanceof FormData;
   const headers = new Headers(init?.headers);
-  if (hasBody && !headers.has("Content-Type")) {
+  if (hasBody && !isFormData && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
 
@@ -374,4 +452,50 @@ export async function getContentPages(): Promise<ContentPageItem[]> {
 export async function getGalleries(): Promise<GalleryItem[]> {
   const payload = await requestJson<GalleryItem[] | Paginated<GalleryItem>>("/galleries");
   return normalizeList(payload);
+}
+
+export async function getMemberEditAccess(token: string): Promise<MemberEditAccessPayload> {
+  return requestJson<MemberEditAccessPayload>(`/member-profile-access/${encodeURIComponent(token)}`);
+}
+
+export async function submitMemberProfileChanges(
+  token: string,
+  payload: MemberProfileSubmissionPayload
+): Promise<{ id: number; status: string; submitted_at: string; message: string }> {
+  const formData = new FormData();
+
+  for (const [key, rawValue] of Object.entries(payload)) {
+    if (rawValue === undefined || rawValue === null) {
+      continue;
+    }
+
+    if (key === "photo_file") {
+      if (rawValue instanceof File) {
+        formData.append("photo_file", rawValue);
+      }
+      continue;
+    }
+
+    if (key === "remove_photo") {
+      if (rawValue === true) {
+        formData.append("remove_photo", "true");
+      }
+      continue;
+    }
+
+    if (key === "research_interests" || key === "milestones") {
+      formData.append(key, JSON.stringify(rawValue));
+      continue;
+    }
+
+    formData.append(key, String(rawValue));
+  }
+
+  return requestJson<{ id: number; status: string; submitted_at: string; message: string }>(
+    `/member-profile-access/${encodeURIComponent(token)}/submit`,
+    {
+      method: "POST",
+      body: formData,
+    }
+  );
 }

@@ -1,9 +1,11 @@
 import os
+import secrets
+from datetime import timedelta
 from uuid import uuid4
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import models, transaction
 from django.utils import timezone
 from django.utils.text import slugify
 
@@ -20,6 +22,11 @@ def _dated_upload_path(prefix: str, reference: str, filename: str) -> str:
 
 def member_photo_upload_to(instance, filename: str) -> str:
 	return _dated_upload_path("members/photos", instance.full_name, filename)
+
+
+def member_submission_photo_upload_to(instance, filename: str) -> str:
+	reference = instance.member.full_name if getattr(instance, "member_id", None) else "member-submission"
+	return _dated_upload_path("members/submissions/photos", reference, filename)
 
 
 def news_cover_upload_to(instance, filename: str) -> str:
@@ -125,6 +132,252 @@ class Member(TimeStampedModel):
 
 	def __str__(self):
 		return self.full_name
+
+
+MEMBER_PROFILE_EDITABLE_FIELDS = (
+	"full_name",
+	"role",
+	"expertise",
+	"email",
+	"biography",
+	"highlight_quote",
+	"research_interests",
+	"milestones",
+	"researchgate_url",
+	"google_scholar_url",
+	"orcid_url",
+)
+
+
+class MemberProfileSubmissionStatus(models.TextChoices):
+	PENDING_APPROVAL = "pending_approval", "Pending Approval"
+	CHANGES_REQUESTED = "changes_requested", "Changes Requested"
+	APPROVED = "approved", "Approved"
+
+
+class MemberProfileAuditEvent(models.TextChoices):
+	LINK_REGENERATED = "link_regenerated", "Link Regenerated"
+	SUBMITTED = "submitted", "Submitted"
+	APPROVED = "approved", "Approved"
+	CHANGES_REQUESTED = "changes_requested", "Changes Requested"
+
+
+class MemberProfileAccessLink(TimeStampedModel):
+	member = models.OneToOneField(Member, on_delete=models.CASCADE, related_name="profile_access_link")
+	token = models.CharField(max_length=96, unique=True, db_index=True, blank=True)
+	expires_at = models.DateTimeField(null=True, blank=True)
+	is_active = models.BooleanField(default=True)
+	created_by = models.ForeignKey(
+		settings.AUTH_USER_MODEL,
+		on_delete=models.SET_NULL,
+		null=True,
+		blank=True,
+		related_name="generated_member_profile_links",
+	)
+	last_used_at = models.DateTimeField(null=True, blank=True)
+
+	class Meta:
+		verbose_name = "Member profile access link"
+		verbose_name_plural = "Member profile access links"
+
+	def __str__(self):
+		return f"Edit link for {self.member.full_name}"
+
+	@property
+	def is_expired(self) -> bool:
+		if not self.expires_at:
+			return False
+		return self.expires_at <= timezone.now()
+
+	def regenerate(self, *, created_by=None, expires_in_days: int = 30) -> str:
+		self.token = secrets.token_urlsafe(48)
+		self.expires_at = timezone.now() + timedelta(days=expires_in_days)
+		self.is_active = True
+		if created_by is not None:
+			self.created_by = created_by
+		self.save()
+
+		MemberProfileAuditLog.record(
+			member=self.member,
+			event_type=MemberProfileAuditEvent.LINK_REGENERATED,
+			actor_user=created_by,
+			details={"expires_at": self.expires_at.isoformat() if self.expires_at else None},
+		)
+		return self.token
+
+	def save(self, *args, **kwargs):
+		if not self.token:
+			self.token = secrets.token_urlsafe(48)
+		if self.expires_at is None:
+			self.expires_at = timezone.now() + timedelta(days=30)
+		super().save(*args, **kwargs)
+
+
+class MemberProfileSubmission(TimeStampedModel):
+	member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="profile_submissions")
+	submitted_by = models.CharField(max_length=180, blank=True)
+	submitted_from_ip = models.GenericIPAddressField(null=True, blank=True)
+	proposed_photo = models.ImageField(upload_to=member_submission_photo_upload_to, blank=True)
+	status = models.CharField(
+		max_length=32,
+		choices=MemberProfileSubmissionStatus.choices,
+		default=MemberProfileSubmissionStatus.PENDING_APPROVAL,
+		db_index=True,
+	)
+	proposed_data = models.JSONField(default=dict, blank=True)
+	admin_comment = models.TextField(blank=True)
+	submitted_at = models.DateTimeField(auto_now_add=True)
+	reviewed_by = models.ForeignKey(
+		settings.AUTH_USER_MODEL,
+		on_delete=models.SET_NULL,
+		null=True,
+		blank=True,
+		related_name="member_profile_reviews",
+	)
+	reviewed_at = models.DateTimeField(null=True, blank=True)
+	approved_at = models.DateTimeField(null=True, blank=True)
+	applied_at = models.DateTimeField(null=True, blank=True)
+
+	class Meta:
+		ordering = ["-submitted_at", "-id"]
+
+	def __str__(self):
+		return f"Submission #{self.pk} for {self.member.full_name}"
+
+	def _apply_member_changes(self):
+		for field in MEMBER_PROFILE_EDITABLE_FIELDS:
+			if field in self.proposed_data:
+				setattr(self.member, field, self.proposed_data[field])
+
+		if self.proposed_data.get("__remove_photo"):
+			if self.member.photo_url:
+				self.member.photo_url.delete(save=False)
+			self.member.photo_url = ""
+		elif self.proposed_photo:
+			self.member.photo_url = self.proposed_photo
+
+		self.member.save()
+
+	def approve(self, *, reviewer):
+		if self.status != MemberProfileSubmissionStatus.PENDING_APPROVAL:
+			raise ValidationError("Only pending submissions can be approved.")
+
+		with transaction.atomic():
+			self._apply_member_changes()
+			now = timezone.now()
+			self.status = MemberProfileSubmissionStatus.APPROVED
+			self.reviewed_by = reviewer
+			self.reviewed_at = now
+			self.approved_at = now
+			self.applied_at = now
+			if not self.submitted_by:
+				self.submitted_by = self.member.full_name
+			self.save(
+				update_fields=[
+					"status",
+					"reviewed_by",
+					"reviewed_at",
+					"approved_at",
+					"applied_at",
+					"submitted_by",
+					"updated_at",
+				]
+			)
+
+			MemberProfileAuditLog.record(
+				member=self.member,
+				submission=self,
+				event_type=MemberProfileAuditEvent.APPROVED,
+				actor_user=reviewer,
+				details={"approved_submission_id": self.pk},
+			)
+
+	def request_changes(self, *, reviewer, comment: str = ""):
+		if self.status != MemberProfileSubmissionStatus.PENDING_APPROVAL:
+			raise ValidationError("Only pending submissions can be marked as changes requested.")
+
+		now = timezone.now()
+		self.status = MemberProfileSubmissionStatus.CHANGES_REQUESTED
+		self.reviewed_by = reviewer
+		self.reviewed_at = now
+		if comment:
+			self.admin_comment = comment
+		self.save(update_fields=["status", "reviewed_by", "reviewed_at", "admin_comment", "updated_at"])
+
+		MemberProfileAuditLog.record(
+			member=self.member,
+			submission=self,
+			event_type=MemberProfileAuditEvent.CHANGES_REQUESTED,
+			actor_user=reviewer,
+			details={"comment": self.admin_comment},
+		)
+
+	def save(self, *args, **kwargs):
+		if not self.submitted_by:
+			self.submitted_by = self.member.full_name
+		super().save(*args, **kwargs)
+
+
+class MemberProfileAuditLog(TimeStampedModel):
+	member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="profile_audit_logs")
+	submission = models.ForeignKey(
+		MemberProfileSubmission,
+		on_delete=models.SET_NULL,
+		null=True,
+		blank=True,
+		related_name="audit_logs",
+	)
+	event_type = models.CharField(max_length=40, choices=MemberProfileAuditEvent.choices, db_index=True)
+	actor_member = models.ForeignKey(
+		Member,
+		on_delete=models.SET_NULL,
+		null=True,
+		blank=True,
+		related_name="member_profile_actor_logs",
+	)
+	actor_user = models.ForeignKey(
+		settings.AUTH_USER_MODEL,
+		on_delete=models.SET_NULL,
+		null=True,
+		blank=True,
+		related_name="member_profile_actor_logs",
+	)
+	actor_label = models.CharField(max_length=180, blank=True)
+	details = models.JSONField(default=dict, blank=True)
+
+	class Meta:
+		ordering = ["-created_at", "-id"]
+
+	def __str__(self):
+		return f"{self.get_event_type_display()} - {self.member.full_name}"
+
+	@classmethod
+	def record(
+		cls,
+		*,
+		member,
+		event_type: str,
+		submission=None,
+		actor_member=None,
+		actor_user=None,
+		actor_label: str = "",
+		details=None,
+	):
+		resolved_label = actor_label
+		if not resolved_label and actor_user is not None:
+			resolved_label = actor_user.get_username()
+		if not resolved_label and actor_member is not None:
+			resolved_label = actor_member.full_name
+
+		return cls.objects.create(
+			member=member,
+			submission=submission,
+			event_type=event_type,
+			actor_member=actor_member,
+			actor_user=actor_user,
+			actor_label=resolved_label,
+			details=details or {},
+		)
 
 
 class TeamMembership(TimeStampedModel):

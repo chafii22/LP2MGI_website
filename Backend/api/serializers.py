@@ -1,3 +1,5 @@
+import json
+
 from rest_framework import serializers
 
 from core.models import (
@@ -9,6 +11,9 @@ from core.models import (
     HomeHeroSlide,
     HomeMetric,
     Member,
+    MemberProfileAuditLog,
+    MemberProfileSubmission,
+    MemberRole,
     NewsPost,
     OverviewContent,
     Project,
@@ -309,6 +314,115 @@ class ContactMessageCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = ContactMessage
         fields = ["full_name", "email", "subject", "message"]
+
+
+class MemberEditableProfileSerializer(serializers.ModelSerializer):
+    photo_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Member
+        fields = [
+            "id",
+            "full_name",
+            "role",
+            "expertise",
+            "email",
+            "photo_url",
+            "biography",
+            "highlight_quote",
+            "research_interests",
+            "milestones",
+            "researchgate_url",
+            "google_scholar_url",
+            "orcid_url",
+        ]
+
+    def get_photo_url(self, obj):
+        return _build_media_url(self.context.get("request"), obj.photo_url)
+
+
+class MemberProfileSubmissionCreateSerializer(serializers.Serializer):
+    full_name = serializers.CharField(max_length=180, required=False, allow_blank=True)
+    role = serializers.ChoiceField(choices=MemberRole.choices, required=False)
+    expertise = serializers.CharField(max_length=255, required=False, allow_blank=True)
+    email = serializers.EmailField(required=False, allow_blank=True)
+    biography = serializers.CharField(required=False, allow_blank=True)
+    highlight_quote = serializers.CharField(max_length=280, required=False, allow_blank=True)
+    research_interests = serializers.JSONField(required=False)
+    milestones = serializers.JSONField(required=False)
+    researchgate_url = serializers.URLField(required=False, allow_blank=True)
+    google_scholar_url = serializers.URLField(required=False, allow_blank=True)
+    orcid_url = serializers.URLField(required=False, allow_blank=True)
+    photo_file = serializers.ImageField(required=False, allow_null=True, write_only=True)
+    remove_photo = serializers.BooleanField(required=False, default=False, write_only=True)
+
+    def validate(self, attrs):
+        for key in ["research_interests", "milestones"]:
+            value = attrs.get(key)
+            if isinstance(value, str):
+                try:
+                    attrs[key] = json.loads(value)
+                except json.JSONDecodeError as exc:
+                    raise serializers.ValidationError({key: "Must be valid JSON."}) from exc
+
+        if "research_interests" in attrs and not isinstance(attrs["research_interests"], list):
+            raise serializers.ValidationError({"research_interests": "Must be a JSON array."})
+
+        if "milestones" in attrs and not isinstance(attrs["milestones"], list):
+            raise serializers.ValidationError({"milestones": "Must be a JSON array."})
+
+        meaningful_fields = [
+            key
+            for key, value in attrs.items()
+            if (key == "photo_file" and value)
+            or (key == "remove_photo" and value)
+            or (key not in {"photo_file", "remove_photo"})
+        ]
+
+        if not meaningful_fields:
+            raise serializers.ValidationError("At least one field must be submitted.")
+
+        return attrs
+
+
+class MemberProfileSubmissionSerializer(serializers.ModelSerializer):
+    reviewed_by = serializers.SerializerMethodField()
+
+    class Meta:
+        model = MemberProfileSubmission
+        fields = [
+            "id",
+            "status",
+            "submitted_by",
+            "submitted_at",
+            "reviewed_by",
+            "reviewed_at",
+            "approved_at",
+            "applied_at",
+            "admin_comment",
+        ]
+
+    def get_reviewed_by(self, obj):
+        if not obj.reviewed_by:
+            return ""
+        return obj.reviewed_by.get_username()
+
+
+class MemberProfileAuditLogSerializer(serializers.ModelSerializer):
+    actor = serializers.SerializerMethodField()
+
+    class Meta:
+        model = MemberProfileAuditLog
+        fields = ["id", "event_type", "actor", "created_at", "details"]
+
+    def get_actor(self, obj):
+        if obj.actor_label:
+            return obj.actor_label
+        if obj.actor_user:
+            return obj.actor_user.get_username()
+        if obj.actor_member:
+            return obj.actor_member.full_name
+        return "system"
 
 
 class ProjectParticipantSerializer(serializers.ModelSerializer):

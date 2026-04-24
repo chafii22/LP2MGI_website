@@ -1,0 +1,392 @@
+:root {
+	--member-edit-bg-a: color-mix(in srgb, var(--surface) 82%, #dff3ee 18%);
+	--member-edit-bg-b: color-mix(in srgb, var(--surface-muted) 70%, #f5fbf8 30%);
+}
+
+.mainContainer {
+	min-height: 100vh;
+	background:
+		radial-gradient(circle at 88% 8%, color-mix(in srgb, var(--brand) 10%, transparent) 0 26%, transparent 56%),
+		linear-gradient(145deg, var(--member-edit-bg-a), var(--member-edit-bg-b));
+	padding: 1.25rem;
+	color: var(--foreground);
+}
+
+.stateMessage {
+	margin: 4rem auto;
+	max-width: 44rem;
+	text-align: center;
+	font-size: 1rem;
+	color: var(--text-muted);
+}
+
+.errorCard {
+	max-width: 44rem;
+	margin: 4rem auto;
+	background: var(--surface);
+	border: 1px solid color-mix(in srgb, #d14343 45%, var(--border-color));
+	border-radius: 1rem;
+	box-shadow: var(--shadow-soft);
+	padding: 1.25rem;
+}
+
+.errorCard h1 {
+	margin: 0 0 0.5rem;
+	font-size: 1.35rem;
+}
+
+.errorCard p {
+	margin: 0;
+	color: color-mix(in srgb, var(--foreground) 88%, #7a2222 12%);
+}
+
+.headerSection,
+.noticeCard,
+.formSection,
+.auditSection {
+	width: min(70rem, 100%);
+	margin: 0 auto;
+	background: var(--surface);
+	border: 1px solid var(--border-color);
+	border-radius: 1rem;
+	box-shadow: var(--shadow-soft);
+}
+
+.headerSection {
+	padding: 1.25rem;
+	position: relative;
+	overflow: hidden;
+}
+
+.headerSection::after {
+	content: "";
+	position: absolute;
+	right: -4rem;
+	top: -5rem;
+	width: 14rem;
+	height: 14rem;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--brand) 16%, transparent);
+	pointer-events: none;
+}
+
+.subtitle {
+	margin: 0;
+	font-size: 0.8rem;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--brand);
+	font-weight: 700;
+}
+
+.title {
+	margin: 0.5rem 0 0;
+	font-size: clamp(1.4rem, 3.8vw, 2.15rem);
+	line-height: 1.16;
+}
+
+.description {
+	margin: 0.75rem 0 0;
+	max-width: 60ch;
+	color: var(--text-muted);
+	line-height: 1.56;
+}
+
+.statusBadge {
+	display: inline-flex;
+	align-items: center;
+	margin-top: 0.95rem;
+	padding: 0.45rem 0.8rem;
+	border-radius: 999px;
+	font-size: 0.84rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	border: 1px solid color-mix(in srgb, var(--brand) 35%, transparent);
+	color: var(--brand-strong);
+	background: color-mix(in srgb, var(--brand) 15%, transparent);
+}
+
+.statusBadge[data-status="pending_approval"],
+.statusBadge[data-status="pending_invitation"] {
+	color: #7a5f00;
+	background: color-mix(in srgb, #f8d55a 34%, transparent);
+	border-color: color-mix(in srgb, #f8d55a 58%, transparent);
+}
+
+.statusBadge[data-status="changes_requested"] {
+	color: #8e1a1a;
+	background: color-mix(in srgb, #ff7878 25%, transparent);
+	border-color: color-mix(in srgb, #ff7878 48%, transparent);
+}
+
+.statusBadge[data-status="active"] {
+	color: #135e44;
+	background: color-mix(in srgb, #4dca9a 26%, transparent);
+	border-color: color-mix(in srgb, #4dca9a 50%, transparent);
+}
+
+.noticeCard {
+	margin-top: 1rem;
+	padding: 1rem 1.1rem;
+	border-color: color-mix(in srgb, var(--brand) 45%, var(--border-color));
+}
+
+.noticeCard h2 {
+	margin: 0;
+	font-size: 1rem;
+}
+
+.noticeCard p {
+	margin: 0.45rem 0 0;
+	color: var(--text-muted);
+	line-height: 1.5;
+}
+
+.formSection {
+	margin-top: 1rem;
+	padding: 1.1rem;
+}
+
+.formGrid {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 0.9rem;
+}
+
+.field {
+	display: flex;
+	flex-direction: column;
+	gap: 0.45rem;
+}
+
+.photoField {
+	display: flex;
+	flex-direction: column;
+	gap: 0.55rem;
+}
+
+.photoField > span {
+	font-size: 0.86rem;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--foreground) 82%, var(--brand) 18%);
+}
+
+.photoPanel {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 0.75rem;
+	border: 1px solid var(--border-color);
+	border-radius: 0.84rem;
+	padding: 0.75rem;
+	background: color-mix(in srgb, var(--surface) 70%, var(--surface-muted) 30%);
+}
+
+.photoPreviewWrap {
+	width: 100%;
+	max-width: 11rem;
+}
+
+.photoPreview {
+	width: 11rem;
+	height: 11rem;
+	border-radius: 0.9rem;
+	border: 1px solid var(--border-color);
+	object-fit: cover;
+	display: block;
+	background: var(--surface);
+}
+
+.photoPlaceholder {
+	width: 11rem;
+	height: 11rem;
+	border-radius: 0.9rem;
+	border: 1px dashed var(--border-color);
+	display: grid;
+	place-items: center;
+	text-align: center;
+	padding: 0.6rem;
+	font-size: 0.86rem;
+	color: var(--text-muted);
+	background: color-mix(in srgb, var(--surface-muted) 70%, transparent);
+}
+
+.photoActions {
+	display: flex;
+	flex-direction: column;
+	gap: 0.6rem;
+}
+
+.photoActions input[type="file"] {
+	width: 100%;
+	border: 1px solid var(--border-color);
+	border-radius: 0.64rem;
+	background: var(--surface);
+	padding: 0.55rem;
+}
+
+.checkboxLabel {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.45rem;
+	font-size: 0.9rem;
+	color: var(--text-muted);
+}
+
+.field span {
+	font-size: 0.86rem;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--foreground) 82%, var(--brand) 18%);
+}
+
+.field input,
+.field select,
+.field textarea {
+	width: 100%;
+	border-radius: 0.72rem;
+	border: 1px solid var(--border-color);
+	background: var(--surface);
+	color: var(--foreground);
+	padding: 0.72rem 0.8rem;
+	font-size: 0.97rem;
+	transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+}
+
+.field textarea {
+	resize: vertical;
+	min-height: 5.75rem;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+	outline: none;
+	border-color: color-mix(in srgb, var(--brand) 60%, transparent);
+	box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand) 20%, transparent);
+	background: color-mix(in srgb, var(--surface) 84%, #f9fffd 16%);
+}
+
+.fullWidth {
+	grid-column: 1 / -1;
+}
+
+.actionsRow {
+	display: flex;
+	align-items: center;
+	gap: 0.85rem;
+	flex-wrap: wrap;
+}
+
+.actionsRow button {
+	border: none;
+	border-radius: 999px;
+	padding: 0.7rem 1.05rem;
+	font-weight: 700;
+	color: #fff;
+	cursor: pointer;
+	background: linear-gradient(135deg, var(--brand), var(--brand-strong));
+	transition: transform 170ms ease, filter 170ms ease;
+}
+
+.actionsRow button:hover:not(:disabled) {
+	transform: translateY(-1px);
+	filter: brightness(1.04);
+}
+
+.actionsRow button:disabled {
+	cursor: not-allowed;
+	opacity: 0.55;
+}
+
+.helperText {
+	margin: 0;
+	color: var(--text-muted);
+	font-size: 0.9rem;
+}
+
+.feedback {
+	margin: 0;
+	color: var(--brand-strong);
+	font-weight: 700;
+	font-size: 0.95rem;
+}
+
+.auditSection {
+	margin-top: 1rem;
+	padding: 1.1rem;
+}
+
+.auditSection h2 {
+	margin: 0;
+	font-size: 1.12rem;
+}
+
+.auditHint {
+	margin: 0.45rem 0 0;
+	color: var(--text-muted);
+	font-size: 0.92rem;
+}
+
+.auditList {
+	list-style: none;
+	margin: 0.95rem 0 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.62rem;
+}
+
+.auditItem {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 0.22rem;
+	border: 1px solid var(--border-color);
+	border-radius: 0.8rem;
+	padding: 0.72rem 0.82rem;
+	background: color-mix(in srgb, var(--surface) 70%, var(--surface-muted) 30%);
+}
+
+.auditType {
+	text-transform: capitalize;
+	font-weight: 700;
+}
+
+.auditMeta,
+.auditItem time {
+	color: var(--text-muted);
+	font-size: 0.9rem;
+}
+
+@media (min-width: 760px) {
+	.mainContainer {
+		padding: 1.8rem;
+	}
+
+	.headerSection,
+	.formSection,
+	.noticeCard,
+	.auditSection {
+		padding: 1.4rem 1.5rem;
+	}
+
+	.formGrid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 1rem;
+	}
+
+	.auditItem {
+		grid-template-columns: 1.15fr 0.9fr auto;
+		align-items: center;
+		column-gap: 0.75rem;
+	}
+
+	.photoPanel {
+		grid-template-columns: auto 1fr;
+		align-items: center;
+		gap: 1rem;
+	}
+
+	.auditItem time {
+		text-align: right;
+	}
+}
